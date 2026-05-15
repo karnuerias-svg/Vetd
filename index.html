@@ -147,70 +147,121 @@
         </div>
     </main>
 
-    <script>
-        // Set today's date as default
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 1. ตั้งค่าฐานข้อมูล (Cloud Storage)
+        // ==========================================
+        let app, db, auth, userId;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pet-health-log';
+        let isFirebaseActive = typeof __firebase_config !== 'undefined';
+
+        if (isFirebaseActive) {
+            const firebaseConfig = JSON.parse(__firebase_config);
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            initAuth();
+        }
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                userId = auth.currentUser?.uid;
+                if (userId) setupRealtimeListener();
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        }
+
+        // ==========================================
+        // 2. การจัดการสถานะและการแสดงผล
+        // ==========================================
         document.getElementById('logDate').valueAsDate = new Date();
 
-        // State: Array to store log entries
         let petLogs = [];
-        
-        // DOM Elements
         const form = document.getElementById('logForm');
         const logsContainer = document.getElementById('logsContainer');
         const searchInput = document.getElementById('searchInput');
         const emptyState = document.getElementById('emptyState');
 
-        // Handle form submission
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+        // ฟังก์ชันดึงข้อมูลแบบ Real-time จากฐานข้อมูล
+        function setupRealtimeListener() {
+            if (!userId) return;
+            const logsRef = collection(db, 'artifacts', appId, 'users', userId, 'petLogs');
+            
+            // รอรับข้อมูลการเปลี่ยนแปลง
+            onSnapshot(logsRef, (snapshot) => {
+                petLogs = snapshot.docs.map(doc => doc.data());
+                // เรียงลำดับจากใหม่สุดไปเก่าสุด โดยใช้ ID (ซึ่งเป็น Timestamp)
+                petLogs.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+                window.renderLogs(searchInput.value.toLowerCase());
+            }, (error) => {
+                console.error("Snapshot error:", error);
+            });
+        }
 
-            // Get values from inputs
+        // ==========================================
+        // 3. จัดการการเพิ่มข้อมูล (Submit Form)
+        // ==========================================
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
             const patientTypeElement = document.querySelector('input[name="patientType"]:checked');
+            const id = Date.now().toString(); // สร้าง ID เฉพาะ
             
             const newLog = {
-                id: Date.now().toString(), // Unique ID
+                id: id,
                 petId: document.getElementById('petId').value.trim(),
                 petName: document.getElementById('petName').value.trim(),
                 ownerPhone: document.getElementById('ownerPhone').value.trim(),
                 patientType: patientTypeElement ? patientTypeElement.value : 'OPD',
-                isDischarged: false, // เพิ่มสถานะการกลับบ้าน
-                dischargeTimestamp: "", // เพิ่มเวลาที่กลับบ้าน
+                isDischarged: false,
+                dischargeTimestamp: "",
                 date: document.getElementById('logDate').value,
                 symptoms: document.getElementById('symptoms').value.trim(),
-                updateNote: "", // ว่างไว้ตอนแรกรับ
-                updateTimestamp: "", // เวลาอัปเดต
+                updateNote: "",
+                updateTimestamp: "",
                 createdTimestamp: new Date().toLocaleString('th-TH')
             };
 
-            // Add to array (newest first)
-            petLogs.unshift(newLog);
+            // บันทึกลง Cloud Database
+            if (isFirebaseActive && userId) {
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id);
+                await setDoc(docRef, newLog);
+            } else {
+                petLogs.unshift(newLog);
+                window.renderLogs(searchInput.value.toLowerCase());
+            }
 
-            // Reset form (keep date)
+            // เคลียร์ฟอร์ม
             const currentDate = document.getElementById('logDate').value;
             form.reset();
             document.getElementById('logDate').value = currentDate;
-            // Focus back on ID
             document.getElementById('petId').focus();
-
-            // Render updated logs
-            renderLogs(searchInput.value.toLowerCase());
         });
 
-        // Handle search input
+        // จัดการช่องค้นหา
         searchInput.addEventListener('input', function(e) {
-            renderLogs(e.target.value.toLowerCase());
+            window.renderLogs(e.target.value.toLowerCase());
         });
 
-        // Function to render logs to UI
-        function renderLogs(filterText = '') {
-            // Filter logs based on search text
+        // ==========================================
+        // 4. ฟังก์ชันการแสดงผลและแก้ไขข้อมูล 
+        // ==========================================
+        window.renderLogs = function(filterText = '') {
             const filteredLogs = petLogs.filter(log => {
                 return log.petName.toLowerCase().includes(filterText) || 
                        log.petId.toLowerCase().includes(filterText) ||
                        (log.ownerPhone && log.ownerPhone.includes(filterText));
             });
 
-            // Show/Hide empty state
             if (filteredLogs.length === 0) {
                 emptyState.classList.remove('hidden');
                 emptyState.classList.add('flex');
@@ -221,9 +272,7 @@
                 emptyState.classList.remove('flex');
             }
 
-            // Generate HTML for each log
             logsContainer.innerHTML = filteredLogs.map(log => {
-                
                 let patientTypeBadge = '';
                 if (log.patientType === 'IPD') {
                     if (log.isDischarged) {
@@ -241,13 +290,9 @@
 
                 return `
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 relative group hover:shadow-md transition-shadow flex flex-col h-full">
-                    
-                    <!-- Delete Button -->
-                    <button onclick="deleteLog('${log.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1" title="ลบบันทึก">
+                    <button onclick="window.deleteLog('${log.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1" title="ลบบันทึก">
                         <i class="ph ph-trash text-xl"></i>
                     </button>
-
-                    <!-- Card Header -->
                     <div class="mb-4 pr-8">
                         <div class="flex items-center gap-2 mb-1.5">
                             <h3 class="font-bold text-slate-800 text-lg">${log.petName}</h3>
@@ -259,18 +304,13 @@
                             ${phoneDisplay}
                         </div>
                     </div>
-
-                    <!-- Symptoms Section -->
                     <div class="bg-red-50/50 p-3 rounded-lg border border-red-100 mb-3 shrink-0">
                         <h4 class="text-xs font-semibold text-red-800 uppercase flex items-center gap-1 mb-1">
                             <i class="ph ph-warning-circle"></i> อาการสำคัญแรกรับ
                         </h4>
                         <p class="text-sm text-slate-700 whitespace-pre-line">${log.symptoms}</p>
                     </div>
-
-                    <!-- Updates Section (Interactive) -->
                     <div id="update-wrapper-${log.id}" class="mt-auto">
-                        <!-- Display Mode -->
                         <div id="display-mode-${log.id}">
                             ${log.updateNote ? `
                                 <div class="bg-green-50/50 p-3 rounded-lg border border-green-100 relative group/edit">
@@ -281,36 +321,32 @@
                                             </h4>
                                             ${log.updateTimestamp ? `<span class="text-[10px] text-green-600/80 mt-0.5 flex items-center gap-1"><i class="ph ph-clock"></i> อัปเดตเมื่อ: ${log.updateTimestamp}</span>` : ''}
                                         </div>
-                                        <button onclick="showEditForm('${log.id}')" class="text-green-600 hover:text-green-800 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-xs bg-green-100 px-2 py-0.5 rounded cursor-pointer mt-0.5">
+                                        <button onclick="window.showEditForm('${log.id}')" class="text-green-600 hover:text-green-800 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-xs bg-green-100 px-2 py-0.5 rounded cursor-pointer mt-0.5">
                                             <i class="ph ph-pencil-simple"></i> แก้ไข
                                         </button>
                                     </div>
                                     <p class="text-sm text-slate-700 whitespace-pre-line mt-2">${log.updateNote}</p>
                                 </div>
                             ` : `
-                                <button onclick="showEditForm('${log.id}')" class="w-full text-sm text-teal-600 hover:text-teal-700 font-medium flex items-center justify-center gap-1 transition-colors px-3 py-2 rounded-lg border border-dashed border-teal-300 hover:border-teal-400 hover:bg-teal-50 cursor-pointer">
+                                <button onclick="window.showEditForm('${log.id}')" class="w-full text-sm text-teal-600 hover:text-teal-700 font-medium flex items-center justify-center gap-1 transition-colors px-3 py-2 rounded-lg border border-dashed border-teal-300 hover:border-teal-400 hover:bg-teal-50 cursor-pointer">
                                     <i class="ph ph-plus-circle text-lg"></i> เพิ่มอัปเดตอาการความคืบหน้า
                                 </button>
                             `}
                         </div>
-                        
-                        <!-- Edit Mode (Hidden by default) -->
                         <div id="edit-mode-${log.id}" class="hidden bg-slate-50 p-3 rounded-lg border border-slate-200">
                             <label class="block text-xs font-semibold text-slate-700 mb-1">บันทึกอัปเดตอาการ</label>
                             <textarea id="edit-input-${log.id}" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none resize-none text-sm mb-2">${log.updateNote}</textarea>
                             <div class="flex justify-end gap-2">
-                                <button onclick="hideEditForm('${log.id}')" class="px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors">ยกเลิก</button>
-                                <button onclick="saveUpdate('${log.id}')" class="px-3 py-1 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 rounded transition-colors">บันทึกอัปเดต</button>
+                                <button onclick="window.hideEditForm('${log.id}')" class="px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors">ยกเลิก</button>
+                                <button onclick="window.saveUpdate('${log.id}')" class="px-3 py-1 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 rounded transition-colors">บันทึกอัปเดต</button>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Discharge Action (Only for IPD) -->
                     ${log.patientType === 'IPD' ? `
                         <div class="mt-3 pt-3 border-t border-slate-100">
                             ${!log.isDischarged ? `
                                 <label class="flex items-center gap-2 cursor-pointer group w-fit">
-                                    <input type="checkbox" onchange="toggleDischarge('${log.id}')" class="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500 cursor-pointer">
+                                    <input type="checkbox" onchange="window.toggleDischarge('${log.id}')" class="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500 cursor-pointer">
                                     <span class="text-sm font-medium text-slate-600 group-hover:text-slate-800 transition-colors">ติ๊กเมื่อส่งตัวกลับบ้านแล้ว (Discharge)</span>
                                 </label>
                             ` : `
@@ -319,76 +355,83 @@
                                         <i class="ph ph-check-circle text-green-500 text-base"></i> 
                                         กลับบ้านแล้วเมื่อ: ${log.dischargeTimestamp}
                                     </span>
-                                    <button onclick="toggleDischarge('${log.id}')" class="text-[10px] text-slate-400 hover:text-slate-600 underline">ยกเลิก</button>
+                                    <button onclick="window.toggleDischarge('${log.id}')" class="text-[10px] text-slate-400 hover:text-slate-600 underline">ยกเลิก</button>
                                 </div>
                             `}
                         </div>
                     ` : ''}
-
                 </div>
                 `;
             }).join('');
-        }
+        };
 
-        // Function to delete log
-        function deleteLog(id) {
-            petLogs = petLogs.filter(log => log.id !== id);
-            renderLogs(searchInput.value.toLowerCase());
-        }
+        window.deleteLog = async function(id) {
+            if (isFirebaseActive && userId) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id));
+            } else {
+                petLogs = petLogs.filter(log => log.id !== id);
+                window.renderLogs(searchInput.value.toLowerCase());
+            }
+        };
 
-        // Functions to handle inline editing
-        function showEditForm(id) {
+        window.showEditForm = function(id) {
             document.getElementById(`display-mode-${id}`).classList.add('hidden');
             document.getElementById(`edit-mode-${id}`).classList.remove('hidden');
             document.getElementById(`edit-input-${id}`).focus();
-        }
+        };
 
-        function hideEditForm(id) {
+        window.hideEditForm = function(id) {
             document.getElementById(`edit-mode-${id}`).classList.add('hidden');
             document.getElementById(`display-mode-${id}`).classList.remove('hidden');
-            
-            // Reset textarea value to original in case of cancellation
             const log = petLogs.find(l => l.id === id);
             if (log) {
                 document.getElementById(`edit-input-${id}`).value = log.updateNote;
             }
-        }
+        };
 
-        function saveUpdate(id) {
+        window.saveUpdate = async function(id) {
             const newValue = document.getElementById(`edit-input-${id}`).value.trim();
-            const logIndex = petLogs.findIndex(l => l.id === id);
+            const updateTime = newValue ? new Date().toLocaleString('th-TH') : "";
             
-            if(logIndex > -1) {
-                petLogs[logIndex].updateNote = newValue;
-                // Update Timestamp only if there's actual text
-                if (newValue) {
-                    petLogs[logIndex].updateTimestamp = new Date().toLocaleString('th-TH');
-                } else {
-                    petLogs[logIndex].updateTimestamp = "";
+            if (isFirebaseActive && userId) {
+                // อัปเดตข้อมูลเฉพาะฟิลด์ในฐานข้อมูล
+                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id), {
+                    updateNote: newValue,
+                    updateTimestamp: updateTime
+                });
+            } else {
+                const logIndex = petLogs.findIndex(l => l.id === id);
+                if(logIndex > -1) {
+                    petLogs[logIndex].updateNote = newValue;
+                    petLogs[logIndex].updateTimestamp = updateTime;
+                    window.renderLogs(searchInput.value.toLowerCase());
                 }
-                renderLogs(searchInput.value.toLowerCase());
             }
-        }
+        };
 
-        // Function to toggle discharge status for IPD
-        function toggleDischarge(id) {
-            const logIndex = petLogs.findIndex(l => l.id === id);
-            if(logIndex > -1) {
-                petLogs[logIndex].isDischarged = !petLogs[logIndex].isDischarged;
-                
-                // Set or clear timestamp based on status
-                if (petLogs[logIndex].isDischarged) {
-                    petLogs[logIndex].dischargeTimestamp = new Date().toLocaleString('th-TH');
-                } else {
-                    petLogs[logIndex].dischargeTimestamp = "";
-                }
-                
-                renderLogs(searchInput.value.toLowerCase());
+        window.toggleDischarge = async function(id) {
+            const log = petLogs.find(l => l.id === id);
+            if (!log) return;
+            
+            const newStatus = !log.isDischarged;
+            const dischargeTime = newStatus ? new Date().toLocaleString('th-TH') : "";
+
+            if (isFirebaseActive && userId) {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id), {
+                    isDischarged: newStatus,
+                    dischargeTimestamp: dischargeTime
+                });
+            } else {
+                log.isDischarged = newStatus;
+                log.dischargeTimestamp = dischargeTime;
+                window.renderLogs(searchInput.value.toLowerCase());
             }
-        }
+        };
 
-        // Initial render
-        renderLogs();
+        // Render เริ่มต้นสำหรับกรณีไม่มี Firebase
+        if (!isFirebaseActive) {
+            window.renderLogs();
+        }
     </script>
 </body>
 </html>
