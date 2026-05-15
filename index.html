@@ -4,157 +4,175 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pet Health Log Book</title>
-    
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Load Phosphor Icons -->
+    <!-- Google Fonts: Sarabun & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <!-- Load Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
             font-family: 'Sarabun', 'Inter', sans-serif; 
-            background-color: #f8fafc;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* ซ่อนปุ่มลูกศรใน input number */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="text-slate-800 h-screen overflow-hidden flex flex-col">
+<body class="text-slate-800 min-h-screen bg-slate-50 flex flex-col font-['Sarabun']">
 
     <!-- Header -->
-    <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10">
+    <header class="bg-white border-b border-slate-200 px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm">
         <div class="flex items-center gap-3">
-            <div class="bg-teal-500 text-white p-2 rounded-lg">
+            <div class="bg-teal-500 text-white p-2 rounded-lg shadow-sm">
                 <i class="ph ph-paw-print text-2xl"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-slate-800">Pet Health Log Book</h1>
-                <p class="text-xs text-slate-500">ระบบบันทึกและติดตามอาการสัตว์เลี้ยง</p>
+                <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-tight">Pet Health Log Book</h1>
+                <p class="text-[10px] md:text-xs text-slate-500">ระบบบันทึกและติดตามอาการสัตว์เลี้ยง</p>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-hidden">
-        <div class="max-w-7xl mx-auto h-full flex flex-col md:flex-row">
-            
-            <!-- LEFT PANEL: Form -->
-            <div class="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-slate-200 h-full overflow-y-auto p-6 flex flex-col shadow-sm relative z-0">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
-                    <i class="ph ph-plus-circle text-teal-500"></i> บันทึกเคสใหม่
-                </h2>
+    <main class="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 relative">
+        
+        <!-- LEFT PANEL: Form (Responsive: Stack on mobile, Sticky on desktop) -->
+        <div class="w-full lg:w-1/3 xl:w-1/4 bg-white border border-slate-200 rounded-xl shadow-sm p-5 md:p-6 h-fit lg:sticky top-24 z-10 shrink-0">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800 border-b border-slate-100 pb-3">
+                <i class="ph ph-plus-circle text-teal-500 text-xl"></i> บันทึกเคสใหม่
+            </h2>
 
-                <form id="logForm" class="space-y-4 flex-1">
-                    
-                    <!-- Pet ID -->
-                    <div>
-                        <label for="petId" class="block text-sm font-medium text-slate-700 mb-1">รหัสสัตว์เลี้ยง (ID)</label>
-                        <input type="text" id="petId" required placeholder="เช่น PET-001"
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
+            <form id="logForm" class="space-y-4">
+                <!-- Type: OPD / IPD -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">ประเภทการรักษา</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="caseType" value="OPD" checked class="w-4 h-4 text-teal-600 focus:ring-teal-500 border-slate-300">
+                            <span class="text-sm font-medium">OPD (กลับบ้าน)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="caseType" value="IPD" class="w-4 h-4 text-rose-500 focus:ring-rose-500 border-slate-300">
+                            <span class="text-sm font-medium">IPD (แอดมิท)</span>
+                        </label>
                     </div>
+                </div>
 
-                    <!-- Pet Name -->
+                <!-- Pet ID -->
+                <div>
+                    <label for="petId" class="block text-sm font-medium text-slate-700 mb-1">รหัสสัตว์เลี้ยง (ID)</label>
+                    <input type="text" id="petId" required placeholder="เช่น HN-001"
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
+                </div>
+
+                <!-- Pet Name & Phone (Grid) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                     <div>
                         <label for="petName" class="block text-sm font-medium text-slate-700 mb-1">ชื่อสัตว์เลี้ยง</label>
-                        <input type="text" id="petName" required placeholder="เช่น น้องทองหยิบ"
+                        <input type="text" id="petName" required placeholder="เช่น น้องมอมแมม"
                             class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
                     </div>
-
-                    <!-- Phone Input -->
                     <div>
-                        <label for="ownerPhone" class="block text-sm font-medium text-slate-700 mb-1">เบอร์โทรติดต่อ (เจ้าของ)</label>
-                        <input type="tel" id="ownerPhone" placeholder="เช่น 0812345678"
+                        <label for="ownerPhone" class="block text-sm font-medium text-slate-700 mb-1">เบอร์โทรเจ้าของ</label>
+                        <input type="tel" id="ownerPhone" placeholder="08X-XXX-XXXX"
                             class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
-                    </div>
-
-                    <!-- OPD/IPD Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">ประเภทผู้ป่วย</label>
-                        <div class="flex gap-4">
-                            <label class="flex-1 relative cursor-pointer group">
-                                <input type="radio" name="patientType" value="OPD" checked class="peer sr-only">
-                                <div class="px-4 py-2 border border-slate-200 rounded-lg text-center peer-checked:border-teal-500 peer-checked:bg-teal-50 peer-checked:text-teal-700 hover:bg-slate-50 transition-all">
-                                    <span class="text-sm font-semibold">OPD</span>
-                                    <p class="text-[10px] text-slate-500 mt-0.5 group-hover:text-slate-600 peer-checked:text-teal-600">ผู้ป่วยนอก</p>
-                                </div>
-                            </label>
-                            <label class="flex-1 relative cursor-pointer group">
-                                <input type="radio" name="patientType" value="IPD" class="peer sr-only">
-                                <div class="px-4 py-2 border border-slate-200 rounded-lg text-center peer-checked:border-purple-500 peer-checked:bg-purple-50 peer-checked:text-purple-700 hover:bg-slate-50 transition-all">
-                                    <span class="text-sm font-semibold">IPD</span>
-                                    <p class="text-[10px] text-slate-500 mt-0.5 group-hover:text-slate-600 peer-checked:text-purple-600">ผู้ป่วยใน</p>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Date Input -->
-                    <div>
-                        <label for="logDate" class="block text-sm font-medium text-slate-700 mb-1">วันที่เข้ารับการรักษา</label>
-                        <input type="date" id="logDate" required
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
-                    </div>
-
-                    <!-- Symptoms -->
-                    <div>
-                        <label for="symptoms" class="block text-sm font-medium text-slate-700 mb-1">อาการสำคัญ (แรกรับ)</label>
-                        <textarea id="symptoms" required rows="3" placeholder="ระบุอาการเบื้องต้นที่พบ..."
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none resize-none bg-slate-50 focus:bg-white text-sm"></textarea>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit"
-                        class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 mt-4 shadow-sm">
-                        <i class="ph ph-floppy-disk text-lg"></i> บันทึกข้อมูลแรกรับ
-                    </button>
-                </form>
-            </div>
-
-            <!-- RIGHT PANEL: Log History -->
-            <div class="w-full md:w-2/3 lg:w-3/4 h-full flex flex-col bg-slate-50/50">
-                
-                <!-- Search Bar -->
-                <div class="p-6 pb-2 shrink-0">
-                    <div class="relative max-w-xl">
-                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                        <input type="text" id="searchInput" placeholder="ค้นหาจาก ชื่อสัตว์, ID หรือ เบอร์โทรศัพท์..."
-                            class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none shadow-sm text-sm">
                     </div>
                 </div>
 
-                <!-- Logs Container -->
-                <div class="flex-1 overflow-y-auto p-6 pt-4">
-                    <div id="logsContainer" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                        <!-- Cards will be dynamically inserted here -->
-                    </div>
-                    
-                    <!-- Empty State -->
-                    <div id="emptyState" class="hidden h-full flex-col items-center justify-center text-slate-400 pb-20">
-                        <i class="ph ph-files text-6xl mb-4 opacity-50"></i>
-                        <p class="text-lg font-medium">ยังไม่มีประวัติการรักษา</p>
-                        <p class="text-sm">กรอกข้อมูลด้านซ้ายเพื่อเพิ่มบันทึกใหม่</p>
-                    </div>
+                <!-- Date -->
+                <div>
+                    <label for="logDate" class="block text-sm font-medium text-slate-700 mb-1">วันที่เข้ารับการรักษา</label>
+                    <input type="date" id="logDate" required
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm cursor-pointer">
+                </div>
+
+                <!-- Symptoms -->
+                <div>
+                    <label for="symptoms" class="block text-sm font-medium text-slate-700 mb-1">อาการสำคัญ (แรกรับ)</label>
+                    <textarea id="symptoms" required rows="3" placeholder="ระบุอาการเบื้องต้นที่พบ..."
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none resize-none bg-slate-50 focus:bg-white text-sm"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit"
+                    class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 mt-2 shadow-sm hover:shadow active:scale-[0.98]">
+                    <i class="ph ph-floppy-disk text-lg"></i> บันทึกข้อมูลแรกรับ
+                </button>
+            </form>
+        </div>
+
+        <!-- RIGHT PANEL: Log History -->
+        <div class="w-full lg:w-2/3 xl:w-3/4 flex flex-col gap-4">
+            
+            <!-- Search Bar & Filter -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 items-center">
+                <div class="flex-1 w-full relative">
+                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                    <input type="text" id="searchInput" placeholder="ค้นหาจาก ชื่อสัตว์, ID หรือ เบอร์โทร..."
+                        class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none text-sm">
+                </div>
+                <div class="w-full sm:w-56 relative shrink-0">
+                    <label for="monthFilter" class="absolute -top-2.5 left-3 bg-white px-1 text-[10px] font-semibold text-teal-600 rounded-full border border-teal-100">เลือกเดือน</label>
+                    <input type="month" id="monthFilter"
+                        class="w-full px-4 py-2.5 bg-teal-50 border border-teal-200 text-teal-800 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none text-sm cursor-pointer font-medium">
                 </div>
             </div>
 
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-slate-400">
+                <i class="ph ph-spinner-gap text-4xl mb-4 animate-spin text-teal-500"></i>
+                <p class="text-sm font-medium text-slate-500">กำลังโหลดข้อมูล...</p>
+            </div>
+
+            <!-- Logs Container -->
+            <div id="logsContainer" class="grid grid-cols-1 xl:grid-cols-2 gap-4 auto-rows-max">
+                <!-- Cards will be dynamically inserted here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-12 flex-col items-center justify-center text-slate-400">
+                <i class="ph ph-files text-5xl mb-3 opacity-40"></i>
+                <p class="text-base font-medium text-center text-slate-500">ไม่พบประวัติการรักษา</p>
+                <p class="text-xs mt-1 text-slate-400">ในเดือนที่เลือก หรือตรงกับคำค้นหา</p>
+            </div>
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Custom Delete Confirmation Modal -->
+    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center backdrop-blur-sm px-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <i class="ph ph-warning-circle text-2xl text-red-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">ยืนยันการลบ</h3>
+                    <p class="text-sm text-slate-500 mt-1">คุณต้องการลบประวัตินี้ใช่หรือไม่? ข้อมูลที่ลบจะไม่สามารถกู้คืนได้</p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors text-sm">
+                    ยกเลิก
+                </button>
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors text-sm">
+                    ใช่, ลบข้อมูล
+                </button>
+            </div>
+        </div>
+    </div>
 
-        // ==========================================
-        // 1. นำ Firebase Config ของคุณมาใส่ตรงนี้
-        // ==========================================
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        // Your Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyBv8laQ8UVv9wbDr8uDiD7w4huDDIhZymA",
             authDomain: "vetd-4a601.firebaseapp.com",
@@ -165,105 +183,147 @@
             measurementId: "G-Q9SNSCSW85"
         };
 
-        // เริ่มต้นใช้งาน Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        let userId = null;
+        
+        // Collection Reference
+        const logsRef = collection(db, 'clinics', 'my-clinic', 'petLogs');
 
-        // ฟังก์ชันเข้าสู่ระบบแบบไม่ระบุตัวตน (Anonymous)
-        async function initAuth() {
-            try {
-                const userCredential = await signInAnonymously(auth);
-                userId = userCredential.user.uid;
-                // เมื่อล็อกอินเสร็จ ให้เริ่มฟังการเปลี่ยนแปลงของข้อมูล
-                setupRealtimeListener();
-            } catch (error) {
-                console.error("Auth Error:", error);
-                alert("ไม่สามารถเชื่อมต่อระบบฐานข้อมูลได้ โปรดตรวจสอบการตั้งค่า Firebase");
-            }
-        }
-
-        // ==========================================
-        // 2. การจัดการสถานะและการแสดงผล
-        // ==========================================
-        document.getElementById('logDate').valueAsDate = new Date();
-
+        // State Variables
         let petLogs = [];
+        let unsubscribeRealtime = null; // เก็บตัวยกเลิกการดึงข้อมูลของเดือนเก่า
+
+        // DOM Elements
         const form = document.getElementById('logForm');
         const logsContainer = document.getElementById('logsContainer');
         const searchInput = document.getElementById('searchInput');
+        const monthFilter = document.getElementById('monthFilter');
         const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
 
-        // ฟังก์ชันดึงข้อมูลแบบ Real-time จากฐานข้อมูลของคุณ
-        function setupRealtimeListener() {
-            if (!userId) return;
-            // สร้าง Collection กลางสำหรับทุกคน หรือแยกตาม User (ในที่นี้แยกตาม userId ก่อนเพื่อให้แยกเครื่องกันได้)
-            // ถ้าอยากให้ทุกคนใช้ฐานข้อมูลเดียวกันหมด ให้เปลี่ยนจาก 'users', userId, 'petLogs' เป็นแค่ 'allPetLogs'
-            const logsRef = collection(db, 'clinics', 'my-clinic', 'petLogs'); 
-            
-            // รอรับข้อมูลการเปลี่ยนแปลงแบบ Real-time
-            onSnapshot(logsRef, (snapshot) => {
+        // Authentication แบบไม่ระบุตัวตน (ให้ใช้งานได้ทันที)
+        signInAnonymously(auth).then(() => {
+            console.log("Signed in anonymously");
+            // เมื่อเข้าสู่ระบบสำเร็จ ให้เริ่มโหลดข้อมูลของเดือนปัจจุบัน
+            loadLogsForSelectedMonth();
+        }).catch((error) => {
+            console.error("Auth Error:", error);
+            alert("ไม่สามารถเชื่อมต่อระบบบัญชีได้: " + error.message);
+        });
+
+        // ตั้งค่าเริ่มต้นของวันที่ในฟอร์ม
+        document.getElementById('logDate').valueAsDate = new Date();
+
+        // ตั้งค่าตัวกรองเดือนให้แสดงผลเป็นเดือนปัจจุบัน
+        const currentDate = new Date();
+        const currentMonthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+        monthFilter.value = currentMonthStr;
+
+        // ==========================================
+        // 1. ฟังก์ชันดึงข้อมูลตามเดือน (ประหยัด Quota)
+        // ==========================================
+        function loadLogsForSelectedMonth() {
+            const selectedMonth = monthFilter.value; // ex: "2026-05"
+            if (!selectedMonth) return;
+
+            // แสดง Loading
+            loadingState.classList.remove('hidden');
+            loadingState.classList.add('flex');
+            logsContainer.innerHTML = '';
+            emptyState.classList.add('hidden');
+
+            // คำนวณวันแรกและวันสุดท้ายของเดือน
+            const startDay = `${selectedMonth}-01`;
+            const endDay = `${selectedMonth}-31`; // เทียบ string ได้เลยใน Firestore
+
+            // สร้าง Query ดึงเฉพาะวันที่อยู่ในช่วงเดือนที่เลือก
+            const q = query(
+                logsRef, 
+                where("date", ">=", startDay), 
+                where("date", "<=", endDay)
+            );
+
+            // ถ้ายกเลิกการฟังข้อมูลเดือนเก่าก่อนหน้า
+            if (unsubscribeRealtime) {
+                unsubscribeRealtime();
+            }
+
+            // ฟังการเปลี่ยนแปลงข้อมูลแบบ Real-time ตาม Query ที่สร้าง
+            unsubscribeRealtime = onSnapshot(q, (snapshot) => {
+                loadingState.classList.remove('flex');
+                loadingState.classList.add('hidden');
+
                 petLogs = snapshot.docs.map(doc => doc.data());
-                // เรียงลำดับจากใหม่สุดไปเก่าสุด โดยใช้ ID (ซึ่งเป็น Timestamp)
+                // เรียงลำดับจากใหม่สุดไปเก่าสุด โดยใช้ ID (Timestamp)
                 petLogs.sort((a, b) => parseInt(b.id) - parseInt(a.id));
-                window.renderLogs(searchInput.value.toLowerCase());
+                window.renderLogs();
             }, (error) => {
                 console.error("Snapshot error:", error);
+                loadingState.classList.remove('flex');
+                loadingState.classList.add('hidden');
             });
         }
 
         // ==========================================
-        // 3. จัดการการเพิ่มข้อมูล (Submit Form)
+        // 2. จัดการการเพิ่มข้อมูล (Submit Form)
         // ==========================================
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const patientTypeElement = document.querySelector('input[name="patientType"]:checked');
-            const id = Date.now().toString(); // สร้าง ID เฉพาะ
             
+            // ดึงค่า OPD/IPD
+            const caseType = document.querySelector('input[name="caseType"]:checked').value;
+
             const newLog = {
-                id: id,
-                petId: document.getElementById('petId').value.trim(),
-                petName: document.getElementById('petName').value.trim(),
-                ownerPhone: document.getElementById('ownerPhone').value.trim(),
-                patientType: patientTypeElement ? patientTypeElement.value : 'OPD',
-                isDischarged: false,
-                dischargeTimestamp: "",
+                id: Date.now().toString(),
+                caseType: caseType,
+                petId: document.getElementById('petId').value,
+                petName: document.getElementById('petName').value,
+                ownerPhone: document.getElementById('ownerPhone').value,
                 date: document.getElementById('logDate').value,
-                symptoms: document.getElementById('symptoms').value.trim(),
-                updateNote: "",
-                updateTimestamp: "",
-                createdTimestamp: new Date().toLocaleString('th-TH')
+                symptoms: document.getElementById('symptoms').value,
+                updates: [], // เริ่มต้นไม่มีอัปเดต
+                isDischarged: false, // สำหรับ IPD
+                dischargedAt: null // วันที่ส่งกลับ
             };
 
-            // บันทึกลง Cloud Database ของคุณ
             try {
-                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
+                // บันทึกขึ้น Firestore
+                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', newLog.id);
                 await setDoc(docRef, newLog);
                 
-                // เคลียร์ฟอร์ม
-                const currentDate = document.getElementById('logDate').value;
+                // เคลียร์ฟอร์ม (เก็บวันที่ไว้เหมือนเดิมเผื่อคีย์ต่อ)
+                const formDate = document.getElementById('logDate').value;
+                const formType = caseType;
                 form.reset();
-                document.getElementById('logDate').value = currentDate;
-                document.getElementById('petId').focus();
+                document.getElementById('logDate').value = formDate;
+                document.querySelector(`input[name="caseType"][value="${formType}"]`).checked = true;
+                
+                // เลื่อนหน้าจอกลับมาบนสุด (สำหรับมือถือ)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (error) {
                 console.error("Error adding document: ", error);
             }
         });
 
-        // จัดการช่องค้นหา
-        searchInput.addEventListener('input', function(e) {
-            window.renderLogs(e.target.value.toLowerCase());
-        });
+        // เปลี่ยนเดือน -> โหลดข้อมูลใหม่จากฐานข้อมูล
+        monthFilter.addEventListener('change', () => loadLogsForSelectedMonth());
+        
+        // พิมพ์ค้นหา -> กรองจากข้อมูลที่มีอยู่ในเครื่อง (ไม่เสีย Quota เพิ่ม)
+        searchInput.addEventListener('input', () => window.renderLogs());
 
         // ==========================================
-        // 4. ฟังก์ชันการแสดงผลและแก้ไขข้อมูล 
+        // 3. ฟังก์ชันการแสดงผล
         // ==========================================
-        window.renderLogs = function(filterText = '') {
+        window.renderLogs = function() {
+            const filterText = searchInput.value.toLowerCase();
+
+            // กรองข้อความค้นหา (จากข้อมูลในเดือนนี้ที่โหลดมาแล้ว)
             const filteredLogs = petLogs.filter(log => {
-                return log.petName.toLowerCase().includes(filterText) || 
-                       log.petId.toLowerCase().includes(filterText) ||
-                       (log.ownerPhone && log.ownerPhone.includes(filterText));
+                const matchName = log.petName.toLowerCase().includes(filterText);
+                const matchId = log.petId.toLowerCase().includes(filterText);
+                const matchPhone = log.ownerPhone ? log.ownerPhone.includes(filterText) : false;
+                return matchName || matchId || matchPhone;
             });
 
             if (filteredLogs.length === 0) {
@@ -272,162 +332,187 @@
                 logsContainer.innerHTML = '';
                 return;
             } else {
-                emptyState.classList.add('hidden');
                 emptyState.classList.remove('flex');
+                emptyState.classList.add('hidden');
             }
 
             logsContainer.innerHTML = filteredLogs.map(log => {
-                let patientTypeBadge = '';
-                if (log.patientType === 'IPD') {
+                // Formatting Date
+                const dateObj = new Date(log.date);
+                const thaiDate = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                
+                // Render Updates with Timestamp
+                const updatesHtml = (log.updates || []).map((update, index) => `
+                    <div class="bg-teal-50 border border-teal-100 p-3 rounded-lg text-sm mb-2 group relative">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="font-semibold text-teal-800 text-xs">อัปเดต ${index + 1}</span>
+                            <span class="text-[10px] text-teal-600 bg-teal-100 px-1.5 py-0.5 rounded">${update.timestamp || ''}</span>
+                        </div>
+                        <p class="text-slate-700 whitespace-pre-wrap">${update.text}</p>
+                    </div>
+                `).join('');
+
+                // Check Case Type Badge
+                let typeBadge = '';
+                let dischargeSection = '';
+
+                if (log.caseType === 'IPD') {
                     if (log.isDischarged) {
-                        patientTypeBadge = '<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md border border-slate-200 flex items-center gap-1"><i class="ph ph-house"></i> IPD (กลับบ้านแล้ว)</span>';
+                        typeBadge = `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">IPD (กลับบ้านแล้ว)</span>`;
+                        dischargeSection = `
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-sm text-slate-500">
+                                    <i class="ph-fill ph-check-circle text-green-500 text-lg"></i>
+                                    <span>ส่งกลับเมื่อ: <span class="font-medium">${log.dischargedAt}</span></span>
+                                </div>
+                                <button onclick="window.toggleDischarge('${log.id}', false)" class="text-xs text-slate-400 hover:text-rose-500 underline">ยกเลิกการส่งตัว</button>
+                            </div>
+                        `;
                     } else {
-                        patientTypeBadge = '<span class="text-[10px] font-bold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-md border border-purple-200">IPD</span>';
+                        typeBadge = `<span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-xs font-bold border border-rose-200">IPD (แอดมิท)</span>`;
+                        dischargeSection = `
+                            <div class="mt-4 pt-3 border-t border-slate-100">
+                                <label class="flex items-center gap-2 cursor-pointer bg-slate-50 p-2 rounded border border-slate-200 hover:bg-slate-100 transition">
+                                    <input type="checkbox" onchange="window.toggleDischarge('${log.id}', true)" class="w-4 h-4 text-green-600 rounded border-slate-300">
+                                    <span class="text-sm font-medium text-slate-700">ติ๊กเมื่อส่งตัวกลับบ้านเรียบร้อย</span>
+                                </label>
+                            </div>
+                        `;
                     }
                 } else {
-                    patientTypeBadge = '<span class="text-[10px] font-bold px-2 py-0.5 bg-teal-100 text-teal-700 rounded-md border border-teal-200">OPD</span>';
+                    typeBadge = `<span class="px-2 py-0.5 bg-teal-100 text-teal-700 rounded text-xs font-bold border border-teal-200">OPD</span>`;
                 }
 
-                const phoneDisplay = log.ownerPhone 
-                    ? `<span class="flex items-center gap-1" title="เบอร์โทรศัพท์"><i class="ph ph-phone"></i> ${log.ownerPhone}</span>` 
+                // Phone Display
+                const phoneHtml = log.ownerPhone 
+                    ? `<div class="flex items-center gap-1 text-xs text-slate-500 mt-1"><i class="ph ph-phone"></i> ${log.ownerPhone}</div>` 
                     : '';
 
                 return `
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 relative group hover:shadow-md transition-shadow flex flex-col h-full">
-                    <button onclick="window.deleteLog('${log.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1" title="ลบบันทึก">
-                        <i class="ph ph-trash text-xl"></i>
-                    </button>
-                    <div class="mb-4 pr-8">
-                        <div class="flex items-center gap-2 mb-1.5">
-                            <h3 class="font-bold text-slate-800 text-lg">${log.petName}</h3>
-                            <span class="text-xs font-medium px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md border border-slate-200">ID: ${log.petId}</span>
-                            ${patientTypeBadge}
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                            <span class="flex items-center gap-1"><i class="ph ph-calendar-blank"></i> ${log.date}</span>
-                            ${phoneDisplay}
-                        </div>
-                    </div>
-                    <div class="bg-red-50/50 p-3 rounded-lg border border-red-100 mb-3 shrink-0">
-                        <h4 class="text-xs font-semibold text-red-800 uppercase flex items-center gap-1 mb-1">
-                            <i class="ph ph-warning-circle"></i> อาการสำคัญแรกรับ
-                        </h4>
-                        <p class="text-sm text-slate-700 whitespace-pre-line">${log.symptoms}</p>
-                    </div>
-                    <div id="update-wrapper-${log.id}" class="mt-auto">
-                        <div id="display-mode-${log.id}">
-                            ${log.updateNote ? `
-                                <div class="bg-green-50/50 p-3 rounded-lg border border-green-100 relative group/edit">
-                                    <div class="flex justify-between items-start mb-1">
-                                        <div class="flex flex-col">
-                                            <h4 class="text-xs font-semibold text-green-800 uppercase flex items-center gap-1">
-                                                <i class="ph ph-stethoscope"></i> ความคืบหน้า / อัปเดตอาการ
-                                            </h4>
-                                            ${log.updateTimestamp ? `<span class="text-[10px] text-green-600/80 mt-0.5 flex items-center gap-1"><i class="ph ph-clock"></i> อัปเดตเมื่อ: ${log.updateTimestamp}</span>` : ''}
-                                        </div>
-                                        <button onclick="window.showEditForm('${log.id}')" class="text-green-600 hover:text-green-800 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-xs bg-green-100 px-2 py-0.5 rounded cursor-pointer mt-0.5">
-                                            <i class="ph ph-pencil-simple"></i> แก้ไข
-                                        </button>
-                                    </div>
-                                    <p class="text-sm text-slate-700 whitespace-pre-line mt-2">${log.updateNote}</p>
-                                </div>
-                            ` : `
-                                <button onclick="window.showEditForm('${log.id}')" class="w-full text-sm text-teal-600 hover:text-teal-700 font-medium flex items-center justify-center gap-1 transition-colors px-3 py-2 rounded-lg border border-dashed border-teal-300 hover:border-teal-400 hover:bg-teal-50 cursor-pointer">
-                                    <i class="ph ph-plus-circle text-lg"></i> เพิ่มอัปเดตอาการความคืบหน้า
-                                </button>
-                            `}
-                        </div>
-                        <div id="edit-mode-${log.id}" class="hidden bg-slate-50 p-3 rounded-lg border border-slate-200">
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">บันทึกอัปเดตอาการ</label>
-                            <textarea id="edit-input-${log.id}" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none resize-none text-sm mb-2">${log.updateNote}</textarea>
-                            <div class="flex justify-end gap-2">
-                                <button onclick="window.hideEditForm('${log.id}')" class="px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors">ยกเลิก</button>
-                                <button onclick="window.saveUpdate('${log.id}')" class="px-3 py-1 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 rounded transition-colors">บันทึกอัปเดต</button>
-                            </div>
-                        </div>
-                    </div>
-                    ${log.patientType === 'IPD' ? `
-                        <div class="mt-3 pt-3 border-t border-slate-100">
-                            ${!log.isDischarged ? `
-                                <label class="flex items-center gap-2 cursor-pointer group w-fit">
-                                    <input type="checkbox" onchange="window.toggleDischarge('${log.id}')" class="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500 cursor-pointer">
-                                    <span class="text-sm font-medium text-slate-600 group-hover:text-slate-800 transition-colors">ติ๊กเมื่อส่งตัวกลับบ้านแล้ว (Discharge)</span>
-                                </label>
-                            ` : `
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs font-medium text-slate-500 flex items-center gap-1">
-                                        <i class="ph ph-check-circle text-green-500 text-base"></i> 
-                                        กลับบ้านแล้วเมื่อ: ${log.dischargeTimestamp}
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-5 hover:shadow-md transition-shadow relative group flex flex-col h-full h-auto">
+                        
+                        <!-- Delete Button (Hidden by default, show on hover) -->
+                        <button onclick="window.openDeleteModal('${log.id}')" 
+                            class="absolute top-4 right-4 text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100">
+                            <i class="ph ph-trash text-lg"></i>
+                        </button>
+
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2 pr-8">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2 flex-wrap">
+                                    ${log.petName} 
+                                    <span class="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                                        <i class="ph ph-identification-card"></i> ${log.petId}
                                     </span>
-                                    <button onclick="window.toggleDischarge('${log.id}')" class="text-[10px] text-slate-400 hover:text-slate-600 underline">ยกเลิก</button>
-                                </div>
-                            `}
+                                    ${typeBadge}
+                                </h3>
+                                ${phoneHtml}
+                            </div>
+                            <span class="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full shrink-0">
+                                <i class="ph ph-calendar-blank"></i> ${thaiDate}
+                            </span>
                         </div>
-                    ` : ''}
-                </div>
+                        
+                        <!-- Symptoms (แดงอ่อน) -->
+                        <div class="bg-rose-50 border border-rose-100 rounded-lg p-3 mb-3">
+                            <h4 class="text-xs font-bold text-rose-800 mb-1">อาการสำคัญ (แรกรับ)</h4>
+                            <p class="text-sm text-slate-700 whitespace-pre-wrap">${log.symptoms}</p>
+                        </div>
+
+                        <!-- Updates (เขียวอ่อน) -->
+                        <div class="flex-1 flex flex-col justify-start">
+                            <h4 class="text-xs font-bold text-teal-800 mb-2 flex justify-between items-center">
+                                ประวัติการอัปเดต
+                                <button onclick="window.addUpdate('${log.id}')" class="text-xs font-medium bg-white border border-teal-200 text-teal-600 hover:bg-teal-50 px-2 py-0.5 rounded shadow-sm transition">
+                                    + เพิ่มอัปเดต
+                                </button>
+                            </h4>
+                            
+                            ${updatesHtml}
+                            ${(log.updates && log.updates.length === 0) ? '<p class="text-xs text-slate-400 italic mb-2">ยังไม่มีการอัปเดตอาการ...</p>' : ''}
+                        </div>
+
+                        ${dischargeSection}
+                    </div>
                 `;
             }).join('');
         };
 
-        window.deleteLog = async function(id) {
-            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบประวัตินี้? ข้อมูลจะถูกลบถาวร")) {
+        // ==========================================
+        // 4. ฟังก์ชันจัดการข้อมูล (Update / Discharge / Delete)
+        // ==========================================
+        
+        // เพิ่มอัปเดตใหม่
+        window.addUpdate = async function(id) {
+            const updateText = prompt('กรุณาระบุความคืบหน้า หรืออาการล่าสุด:');
+            if (updateText && updateText.trim() !== '') {
+                // สร้าง Timestamp ปัจจุบัน (เช่น "15 พ.ค. 2026, 14:30 น.")
+                const now = new Date();
+                const timeString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
+                                   now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+
+                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
+                const targetLog = petLogs.find(l => l.id === id);
+                const currentUpdates = targetLog.updates || [];
+                
                 try {
-                    await deleteDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', id));
+                    await updateDoc(docRef, {
+                        updates: [...currentUpdates, { text: updateText, timestamp: timeString }]
+                    });
                 } catch (error) {
-                    console.error("Error deleting document: ", error);
+                    console.error("Error updating document: ", error);
                 }
             }
         };
 
-        window.showEditForm = function(id) {
-            document.getElementById(`display-mode-${id}`).classList.add('hidden');
-            document.getElementById(`edit-mode-${id}`).classList.remove('hidden');
-            document.getElementById(`edit-input-${id}`).focus();
-        };
-
-        window.hideEditForm = function(id) {
-            document.getElementById(`edit-mode-${id}`).classList.add('hidden');
-            document.getElementById(`display-mode-${id}`).classList.remove('hidden');
-            const log = petLogs.find(l => l.id === id);
-            if (log) {
-                document.getElementById(`edit-input-${id}`).value = log.updateNote;
-            }
-        };
-
-        window.saveUpdate = async function(id) {
-            const newValue = document.getElementById(`edit-input-${id}`).value.trim();
-            const updateTime = newValue ? new Date().toLocaleString('th-TH') : "";
+        // ติ๊กส่งตัวกลับบ้าน / ยกเลิก
+        window.toggleDischarge = async function(id, isDischarged) {
+            const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
             
-            try {
-                // อัปเดตข้อมูลเฉพาะฟิลด์ในฐานข้อมูลของคุณ
-                await updateDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', id), {
-                    updateNote: newValue,
-                    updateTimestamp: updateTime
-                });
-            } catch (error) {
-                console.error("Error updating document: ", error);
+            let dischargedAtTime = null;
+            if (isDischarged) {
+                const now = new Date();
+                dischargedAtTime = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
+                                   now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
             }
-        };
-
-        window.toggleDischarge = async function(id) {
-            const log = petLogs.find(l => l.id === id);
-            if (!log) return;
-            
-            const newStatus = !log.isDischarged;
-            const dischargeTime = newStatus ? new Date().toLocaleString('th-TH') : "";
 
             try {
-                await updateDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', id), {
-                    isDischarged: newStatus,
-                    dischargeTimestamp: dischargeTime
+                await updateDoc(docRef, {
+                    isDischarged: isDischarged,
+                    dischargedAt: dischargedAtTime
                 });
             } catch (error) {
-                console.error("Error discharging: ", error);
+                console.error("Error updating discharge state: ", error);
             }
         };
 
-        // เริ่มต้นการทำงาน
-        initAuth();
+        // ==========================================
+        // 5. ระบบ Modal สำหรับลบข้อมูล (Custom Confirm)
+        // ==========================================
+        let deleteTargetId = null;
+        const deleteModal = document.getElementById('deleteModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+        window.openDeleteModal = function(id) {
+            deleteTargetId = id;
+            deleteModal.classList.remove('hidden');
+        };
+
+        window.closeDeleteModal = function() {
+            deleteTargetId = null;
+            deleteModal.classList.add('hidden');
+        };
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (deleteTargetId) {
+                try {
+                    await deleteDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', deleteTargetId));
+                    window.closeDeleteModal();
+                } catch (error) {
+                    console.error("Error deleting document: ", error);
+                }
+            }
+        });
 
     </script>
 </body>
