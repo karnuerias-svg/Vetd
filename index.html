@@ -341,14 +341,31 @@
                 const dateObj = new Date(log.date);
                 const thaiDate = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
                 
-                // Render Updates with Timestamp
                 const updatesHtml = (log.updates || []).map((update, index) => `
-                    <div class="bg-teal-50 border border-teal-100 p-3 rounded-lg text-sm mb-2 group relative">
+                    <div class="bg-teal-50 border border-teal-100 p-3 rounded-lg text-sm mb-2 group/update relative">
                         <div class="flex justify-between items-start mb-1">
-                            <span class="font-semibold text-teal-800 text-xs">อัปเดต ${index + 1}</span>
+                            <span class="font-semibold text-teal-800 text-xs flex items-center gap-2">
+                                อัปเดต ${index + 1}
+                                <button onclick="window.toggleEditUpdate('${log.id}', ${index})" class="text-teal-400 hover:text-teal-700 opacity-0 group-hover/update:opacity-100 transition-opacity" title="แก้ไข">
+                                    <i class="ph ph-pencil-simple"></i>
+                                </button>
+                            </span>
                             <span class="text-[10px] text-teal-600 bg-teal-100 px-1.5 py-0.5 rounded">${update.timestamp || ''}</span>
                         </div>
-                        <p class="text-slate-700 whitespace-pre-wrap">${update.text}</p>
+                        
+                        <!-- Show Text -->
+                        <div id="update-display-${log.id}-${index}">
+                            <p class="text-slate-700 whitespace-pre-wrap">${update.text}</p>
+                        </div>
+                        
+                        <!-- Edit Form (Hidden by default) -->
+                        <div id="update-edit-${log.id}-${index}" class="hidden mt-2 flex flex-col gap-2">
+                            <textarea id="update-textarea-${log.id}-${index}" rows="2" class="w-full text-sm p-2 border border-teal-300 rounded outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 resize-none">${update.text}</textarea>
+                            <div class="flex justify-end gap-2">
+                                <button onclick="window.cancelEditUpdate('${log.id}', ${index})" class="text-xs px-2 py-1 text-slate-500 hover:bg-slate-200 rounded transition">ยกเลิก</button>
+                                <button onclick="window.saveEditUpdate('${log.id}', ${index})" class="text-xs px-2 py-1 bg-teal-500 text-white hover:bg-teal-600 rounded transition">บันทึก</button>
+                            </div>
+                        </div>
                     </div>
                 `).join('');
 
@@ -419,17 +436,21 @@
                             <p class="text-sm text-slate-700 whitespace-pre-wrap">${log.symptoms}</p>
                         </div>
 
-                        <!-- Updates (เขียวอ่อน) -->
                         <div class="flex-1 flex flex-col justify-start">
-                            <h4 class="text-xs font-bold text-teal-800 mb-2 flex justify-between items-center">
-                                ประวัติการอัปเดต
-                                <button onclick="window.addUpdate('${log.id}')" class="text-xs font-medium bg-white border border-teal-200 text-teal-600 hover:bg-teal-50 px-2 py-0.5 rounded shadow-sm transition">
-                                    + เพิ่มอัปเดต
-                                </button>
-                            </h4>
+                            <h4 class="text-xs font-bold text-teal-800 mb-2">ประวัติการอัปเดต</h4>
                             
                             ${updatesHtml}
                             ${(log.updates && log.updates.length === 0) ? '<p class="text-xs text-slate-400 italic mb-2">ยังไม่มีการอัปเดตอาการ...</p>' : ''}
+                            
+                            <!-- กล่องพิมพ์อัปเดตใหม่ตรงๆ (Inline Input) -->
+                            <div class="mt-2 border border-slate-200 rounded-lg p-2 bg-slate-50 focus-within:bg-white focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-400 transition-all">
+                                <textarea id="new-update-${log.id}" rows="1" placeholder="พิมพ์อัปเดตอาการที่นี่..." class="w-full text-sm bg-transparent outline-none resize-none" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                <div class="flex justify-end mt-1">
+                                    <button onclick="window.submitInlineUpdate('${log.id}')" class="text-xs font-medium bg-teal-100 text-teal-700 hover:bg-teal-600 hover:text-white px-2.5 py-1.5 rounded transition flex items-center gap-1">
+                                        <i class="ph ph-paper-plane-right"></i> ส่งอัปเดต
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         ${dischargeSection}
@@ -442,26 +463,59 @@
         // 4. ฟังก์ชันจัดการข้อมูล (Update / Discharge / Delete)
         // ==========================================
         
-        // เพิ่มอัปเดตใหม่
-        window.addUpdate = async function(id) {
-            const updateText = prompt('กรุณาระบุความคืบหน้า หรืออาการล่าสุด:');
-            if (updateText && updateText.trim() !== '') {
-                // สร้าง Timestamp ปัจจุบัน (เช่น "15 พ.ค. 2026, 14:30 น.")
-                const now = new Date();
-                const timeString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
-                                   now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+        // ส่งอัปเดตใหม่แบบ Inline
+        window.submitInlineUpdate = async function(id) {
+            const textarea = document.getElementById(`new-update-${id}`);
+            const updateText = textarea.value.trim();
+            if (!updateText) return;
 
-                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
-                const targetLog = petLogs.find(l => l.id === id);
-                const currentUpdates = targetLog.updates || [];
-                
-                try {
-                    await updateDoc(docRef, {
-                        updates: [...currentUpdates, { text: updateText, timestamp: timeString }]
-                    });
-                } catch (error) {
-                    console.error("Error updating document: ", error);
-                }
+            // สร้าง Timestamp ปัจจุบัน
+            const now = new Date();
+            const timeString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
+                               now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+
+            const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
+            const targetLog = petLogs.find(l => l.id === id);
+            const currentUpdates = targetLog.updates || [];
+            
+            try {
+                textarea.value = ''; // เคลียร์กล่องหลังกดส่ง
+                await updateDoc(docRef, {
+                    updates: [...currentUpdates, { text: updateText, timestamp: timeString }]
+                });
+            } catch (error) {
+                console.error("Error updating document: ", error);
+            }
+        };
+
+        // เปิดโหมดแก้ไขอัปเดต
+        window.toggleEditUpdate = function(id, index) {
+            document.getElementById(`update-display-${id}-${index}`).classList.add('hidden');
+            document.getElementById(`update-edit-${id}-${index}`).classList.remove('hidden');
+        };
+
+        // ยกเลิกแก้ไขอัปเดต
+        window.cancelEditUpdate = function(id, index) {
+            document.getElementById(`update-display-${id}-${index}`).classList.remove('hidden');
+            document.getElementById(`update-edit-${id}-${index}`).classList.add('hidden');
+        };
+
+        // บันทึกการแก้ไขอัปเดต
+        window.saveEditUpdate = async function(id, index) {
+            const textarea = document.getElementById(`update-textarea-${id}-${index}`);
+            const newText = textarea.value.trim();
+            if (!newText) return;
+
+            const targetLog = petLogs.find(l => l.id === id);
+            const currentUpdates = [...targetLog.updates];
+            
+            currentUpdates[index].text = newText;
+            
+            const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
+            try {
+                await updateDoc(docRef, { updates: currentUpdates });
+            } catch (error) {
+                console.error("Error editing update: ", error);
             }
         };
 
