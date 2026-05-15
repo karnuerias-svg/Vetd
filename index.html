@@ -360,7 +360,7 @@
                         
                         <!-- Edit Form (Hidden by default) -->
                         <div id="update-edit-${log.id}-${index}" class="hidden mt-2 flex flex-col gap-2">
-                            <textarea id="update-textarea-${log.id}-${index}" rows="2" class="w-full text-sm p-2 border border-teal-300 rounded outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 resize-none">${update.text}</textarea>
+                            <textarea id="update-textarea-${log.id}-${index}" rows="1" class="w-full text-sm p-2 border border-teal-300 rounded outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 resize-none overflow-hidden" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'">${update.text}</textarea>
                             <div class="flex justify-end gap-2">
                                 <button onclick="window.cancelEditUpdate('${log.id}', ${index})" class="text-xs px-2 py-1 text-slate-500 hover:bg-slate-200 rounded transition">ยกเลิก</button>
                                 <button onclick="window.saveEditUpdate('${log.id}', ${index})" class="text-xs px-2 py-1 bg-teal-500 text-white hover:bg-teal-600 rounded transition">บันทึก</button>
@@ -444,7 +444,7 @@
                             
                             <!-- กล่องพิมพ์อัปเดตใหม่ตรงๆ (Inline Input) -->
                             <div class="mt-2 border border-slate-200 rounded-lg p-2 bg-slate-50 focus-within:bg-white focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-400 transition-all">
-                                <textarea id="new-update-${log.id}" rows="1" placeholder="พิมพ์อัปเดตอาการที่นี่..." class="w-full text-sm bg-transparent outline-none resize-none" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                <textarea id="new-update-${log.id}" rows="1" placeholder="พิมพ์อัปเดตอาการที่นี่..." class="w-full text-sm bg-transparent outline-none resize-none overflow-hidden" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
                                 <div class="flex justify-end mt-1">
                                     <button onclick="window.submitInlineUpdate('${log.id}')" class="text-xs font-medium bg-teal-100 text-teal-700 hover:bg-teal-600 hover:text-white px-2.5 py-1.5 rounded transition flex items-center gap-1">
                                         <i class="ph ph-paper-plane-right"></i> ส่งอัปเดต
@@ -480,6 +480,7 @@
             
             try {
                 textarea.value = ''; // เคลียร์กล่องหลังกดส่ง
+                textarea.style.height = 'auto'; // คืนขนาดกล่องกลับเป็นค่าเริ่มต้น
                 await updateDoc(docRef, {
                     updates: [...currentUpdates, { text: updateText, timestamp: timeString }]
                 });
@@ -492,6 +493,11 @@
         window.toggleEditUpdate = function(id, index) {
             document.getElementById(`update-display-${id}-${index}`).classList.add('hidden');
             document.getElementById(`update-edit-${id}-${index}`).classList.remove('hidden');
+            
+            // ขยายขนาดกล่องให้พอดีกับข้อความเดิมทันทีที่เปิดโหมดแก้ไข
+            const textarea = document.getElementById(`update-textarea-${id}-${index}`);
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
         };
 
         // ยกเลิกแก้ไขอัปเดต
