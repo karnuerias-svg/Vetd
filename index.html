@@ -149,35 +149,38 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // 1. ตั้งค่าฐานข้อมูล (Cloud Storage)
+        // 1. นำ Firebase Config ของคุณมาใส่ตรงนี้
         // ==========================================
-        let app, db, auth, userId;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pet-health-log';
-        let isFirebaseActive = typeof __firebase_config !== 'undefined';
+        const firebaseConfig = {
+            apiKey: "AIzaSyBv8laQ8UVv9wbDr8uDiD7w4huDDIhZymA",
+            authDomain: "vetd-4a601.firebaseapp.com",
+            projectId: "vetd-4a601",
+            storageBucket: "vetd-4a601.firebasestorage.app",
+            messagingSenderId: "897472183799",
+            appId: "1:897472183799:web:5db41134c234baf09d82f2",
+            measurementId: "G-Q9SNSCSW85"
+        };
 
-        if (isFirebaseActive) {
-            const firebaseConfig = JSON.parse(__firebase_config);
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            initAuth();
-        }
+        // เริ่มต้นใช้งาน Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let userId = null;
 
+        // ฟังก์ชันเข้าสู่ระบบแบบไม่ระบุตัวตน (Anonymous)
         async function initAuth() {
             try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                userId = auth.currentUser?.uid;
-                if (userId) setupRealtimeListener();
+                const userCredential = await signInAnonymously(auth);
+                userId = userCredential.user.uid;
+                // เมื่อล็อกอินเสร็จ ให้เริ่มฟังการเปลี่ยนแปลงของข้อมูล
+                setupRealtimeListener();
             } catch (error) {
-                console.error("Auth error:", error);
+                console.error("Auth Error:", error);
+                alert("ไม่สามารถเชื่อมต่อระบบฐานข้อมูลได้ โปรดตรวจสอบการตั้งค่า Firebase");
             }
         }
 
@@ -192,12 +195,14 @@
         const searchInput = document.getElementById('searchInput');
         const emptyState = document.getElementById('emptyState');
 
-        // ฟังก์ชันดึงข้อมูลแบบ Real-time จากฐานข้อมูล
+        // ฟังก์ชันดึงข้อมูลแบบ Real-time จากฐานข้อมูลของคุณ
         function setupRealtimeListener() {
             if (!userId) return;
-            const logsRef = collection(db, 'artifacts', appId, 'users', userId, 'petLogs');
+            // สร้าง Collection กลางสำหรับทุกคน หรือแยกตาม User (ในที่นี้แยกตาม userId ก่อนเพื่อให้แยกเครื่องกันได้)
+            // ถ้าอยากให้ทุกคนใช้ฐานข้อมูลเดียวกันหมด ให้เปลี่ยนจาก 'users', userId, 'petLogs' เป็นแค่ 'allPetLogs'
+            const logsRef = collection(db, 'clinics', 'my-clinic', 'petLogs'); 
             
-            // รอรับข้อมูลการเปลี่ยนแปลง
+            // รอรับข้อมูลการเปลี่ยนแปลงแบบ Real-time
             onSnapshot(logsRef, (snapshot) => {
                 petLogs = snapshot.docs.map(doc => doc.data());
                 // เรียงลำดับจากใหม่สุดไปเก่าสุด โดยใช้ ID (ซึ่งเป็น Timestamp)
@@ -231,20 +236,19 @@
                 createdTimestamp: new Date().toLocaleString('th-TH')
             };
 
-            // บันทึกลง Cloud Database
-            if (isFirebaseActive && userId) {
-                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id);
+            // บันทึกลง Cloud Database ของคุณ
+            try {
+                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
                 await setDoc(docRef, newLog);
-            } else {
-                petLogs.unshift(newLog);
-                window.renderLogs(searchInput.value.toLowerCase());
+                
+                // เคลียร์ฟอร์ม
+                const currentDate = document.getElementById('logDate').value;
+                form.reset();
+                document.getElementById('logDate').value = currentDate;
+                document.getElementById('petId').focus();
+            } catch (error) {
+                console.error("Error adding document: ", error);
             }
-
-            // เคลียร์ฟอร์ม
-            const currentDate = document.getElementById('logDate').value;
-            form.reset();
-            document.getElementById('logDate').value = currentDate;
-            document.getElementById('petId').focus();
         });
 
         // จัดการช่องค้นหา
@@ -366,11 +370,12 @@
         };
 
         window.deleteLog = async function(id) {
-            if (isFirebaseActive && userId) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id));
-            } else {
-                petLogs = petLogs.filter(log => log.id !== id);
-                window.renderLogs(searchInput.value.toLowerCase());
+            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบประวัตินี้? ข้อมูลจะถูกลบถาวร")) {
+                try {
+                    await deleteDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', id));
+                } catch (error) {
+                    console.error("Error deleting document: ", error);
+                }
             }
         };
 
@@ -393,19 +398,14 @@
             const newValue = document.getElementById(`edit-input-${id}`).value.trim();
             const updateTime = newValue ? new Date().toLocaleString('th-TH') : "";
             
-            if (isFirebaseActive && userId) {
-                // อัปเดตข้อมูลเฉพาะฟิลด์ในฐานข้อมูล
-                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id), {
+            try {
+                // อัปเดตข้อมูลเฉพาะฟิลด์ในฐานข้อมูลของคุณ
+                await updateDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', id), {
                     updateNote: newValue,
                     updateTimestamp: updateTime
                 });
-            } else {
-                const logIndex = petLogs.findIndex(l => l.id === id);
-                if(logIndex > -1) {
-                    petLogs[logIndex].updateNote = newValue;
-                    petLogs[logIndex].updateTimestamp = updateTime;
-                    window.renderLogs(searchInput.value.toLowerCase());
-                }
+            } catch (error) {
+                console.error("Error updating document: ", error);
             }
         };
 
@@ -416,22 +416,19 @@
             const newStatus = !log.isDischarged;
             const dischargeTime = newStatus ? new Date().toLocaleString('th-TH') : "";
 
-            if (isFirebaseActive && userId) {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'petLogs', id), {
+            try {
+                await updateDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', id), {
                     isDischarged: newStatus,
                     dischargeTimestamp: dischargeTime
                 });
-            } else {
-                log.isDischarged = newStatus;
-                log.dischargeTimestamp = dischargeTime;
-                window.renderLogs(searchInput.value.toLowerCase());
+            } catch (error) {
+                console.error("Error discharging: ", error);
             }
         };
 
-        // Render เริ่มต้นสำหรับกรณีไม่มี Firebase
-        if (!isFirebaseActive) {
-            window.renderLogs();
-        }
+        // เริ่มต้นการทำงาน
+        initAuth();
+
     </script>
 </body>
 </html>
