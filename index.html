@@ -550,7 +550,7 @@
             updateBox.style.height = updateBox.scrollHeight + 'px';
 
             try {
-                // อ่านไฟล์เป็น Base64 แบบ Promise เพื่อให้ดักจับ Error ได้ถูกต้อง 100%
+                // อ่านไฟล์เป็น Base64 แบบ Promise
                 const base64Data = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -572,21 +572,38 @@
                     }
                 };
 
-                let result;
-                try {
-                    // ลองใช้โมเดล gemini-1.5-flash-latest ก่อน
-                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-                    result = await model.generateContent([prompt, imagePart]);
-                } catch (fallbackErr) {
-                    if (fallbackErr.message && fallbackErr.message.includes("404")) {
-                        console.warn("Flash model not found, falling back to gemini-1.5-pro-latest");
-                        // หากหา Flash ไม่เจอ (404) ให้สลับไปใช้ 1.5 Pro อัตโนมัติ
-                        const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
-                        result = await fallbackModel.generateContent([prompt, imagePart]);
-                    } else {
-                        // โยน error แบบอื่นออกไปให้ catch ด้านนอกจัดการ
-                        throw fallbackErr; 
+                let result = null;
+                let lastError = null;
+                
+                // ลิสต์โมเดลที่เป็นไปได้ทั้งหมด (AI Auto-Hunter 🕵️‍♂️)
+                // จะลองเรียกตั้งแต่ตัวที่ดีที่สุดไปหาตัวเก่าสุด ถ้าเจอตัวไหนใช้ได้จะหยุดหาทันที
+                const modelsToTry = [
+                    "gemini-1.5-flash",
+                    "gemini-1.5-pro",
+                    "gemini-2.5-flash",
+                    "gemini-1.5-flash-latest",
+                    "gemini-pro-vision"
+                ];
+
+                for (const modelName of modelsToTry) {
+                    try {
+                        console.log("กำลังทดลองเชื่อมต่อ AI โมเดล:", modelName);
+                        const model = genAI.getGenerativeModel({ model: modelName });
+                        result = await model.generateContent([prompt, imagePart]);
+                        
+                        if (result) {
+                            console.log("เชื่อมต่อสำเร็จด้วยโมเดล:", modelName);
+                            break; // ได้ผลลัพธ์แล้ว หยุดลูปทันที
+                        }
+                    } catch (err) {
+                        console.warn(`โมเดล ${modelName} ไม่พร้อมใช้งาน:`, err.message);
+                        lastError = err; // เก็บ Error ล่าสุดไว้เผื่อพังหมดทุกตัว
                     }
+                }
+
+                // ถ้าลองจนครบแล้วยังไม่ได้ผลลัพธ์เลย โยน Error ออกไปแจ้งเตือน
+                if (!result) {
+                    throw lastError; 
                 }
 
                 const aiText = result.response.text();
@@ -600,10 +617,12 @@
                 updateBox.value = originalText; // คืนค่าเดิม
                 updateBox.disabled = false; // ปลดล็อกกล่อง
                 
-                // แจ้งเตือนสาเหตุที่แท้จริง
+                // แจ้งเตือนสาเหตุที่แท้จริงแบบเข้าใจง่าย
                 let errorMsg = "เกิดข้อผิดพลาดในการวิเคราะห์ AI:\n";
                 if (error.message.includes("API key not valid")) {
                     errorMsg += "API Key ไม่ถูกต้อง กรุณาตรวจสอบที่การตั้งค่าอีกครั้งครับ";
+                } else if (error.message.includes("404") || error.message.includes("not found")) {
+                    errorMsg += "หาโมเดล AI ไม่เจอ (Error 404)\n\nสาเหตุ: API Key ของคุณอาจจะเป็นเวอร์ชันเก่า หรือโปรเจกต์นี้ไม่เปิดสิทธิ์ให้ใช้ Gemini รุ่นใหม่\n\nวิธีแก้: แนะนำให้ไปที่เว็บ Google AI Studio -> กดปุ่ม Create API Key เลือก 'Create API key in new project' เพื่อสร้างคีย์ใหม่เอี่ยมมาใช้แทนครับ";
                 } else {
                     errorMsg += error.message;
                 }
