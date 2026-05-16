@@ -374,13 +374,13 @@
                             
                             <!-- Lab Results Box -->
                             ${update.labResult ? `
-                            <div class="bg-purple-50 border border-purple-100 rounded-lg p-2.5 mb-2">
-                                <p class="text-purple-800 text-[11px] font-bold mb-1 flex items-center gap-1.5"><i class="ph-fill ph-flask text-purple-500"></i> ผลตรวจแล็บ (Lab Results)</p>
+                            <div class="bg-purple-50 border border-purple-100 rounded-lg p-3 mb-2">
+                                <p class="text-purple-800 text-[11px] font-bold mb-1.5 flex items-center gap-1.5"><i class="ph-fill ph-flask text-purple-500 text-sm"></i> ผลตรวจแล็บ (Lab Results)</p>
                                 <p class="text-purple-900 whitespace-pre-wrap leading-relaxed text-sm font-semibold">${update.labResult}</p>
                             </div>
                             ` : ''}
 
-                            ${update.imageUrl ? `<img src="${update.imageUrl}" onclick="window.openImageModal('${update.imageUrl}')" class="mt-2 rounded-xl max-h-48 border border-gray-200 object-cover hover:opacity-90 transition cursor-zoom-in" alt="ภาพอัปเดต">` : ''}
+                            ${update.imageUrl ? `<img src="${update.imageUrl}" onclick="window.openImageModal('${update.imageUrl}')" class="mt-2 rounded-xl max-h-48 border border-gray-200 object-cover hover:opacity-90 transition cursor-zoom-in shadow-sm" alt="ภาพอัปเดต">` : ''}
                         </div>
                         
                         <!-- Edit Section -->
@@ -492,7 +492,7 @@
                                 
                                 <div class="relative mb-2">
                                     <div class="absolute top-2 left-2 text-purple-400"><i class="ph-fill ph-flask text-lg"></i></div>
-                                    <textarea id="new-lab-${log.id}" rows="1" placeholder="ผลตรวจแล็บ (ถ้ามี)..." class="w-full text-sm font-semibold text-purple-900 bg-purple-50 border border-purple-100 rounded-lg py-2.5 pr-2 pl-9 outline-none resize-none overflow-hidden placeholder:text-purple-400 transition focus:border-purple-300" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                    <textarea id="new-lab-${log.id}" rows="1" placeholder="ผลตรวจแล็บ (พิมพ์เองหรือใช้ AI ช่วยอ่าน)..." class="w-full text-sm font-semibold text-purple-900 bg-purple-50 border border-purple-100 rounded-lg py-2.5 pr-2 pl-9 outline-none resize-none overflow-hidden placeholder:text-purple-400 transition focus:border-purple-300" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
                                 </div>
 
                                 <div id="preview-container-${log.id}" class="hidden mt-2 relative w-fit px-1">
@@ -500,22 +500,25 @@
                                     <button type="button" onclick="window.removePreview('${log.id}')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 shadow-sm"><i class="ph ph-x text-[10px] font-bold text-white"></i></button>
                                 </div>
 
-                                <div class="flex justify-between items-center mt-3 border-t border-gray-100 pt-3 px-1">
-                                    <div class="flex items-center gap-2">
+                                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mt-3 border-t border-gray-100 pt-3 px-1 gap-3">
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full lg:w-auto flex-1">
                                         <!-- Attach Image -->
-                                        <label class="cursor-pointer text-gray-500 hover:text-cozy-green transition flex items-center gap-1.5 text-[11px] font-bold bg-white px-2.5 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50 shadow-sm">
+                                        <label class="shrink-0 cursor-pointer text-gray-500 hover:text-cozy-green transition flex items-center gap-1.5 text-[11px] font-bold bg-white px-2.5 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50 shadow-sm">
                                             <i class="ph-fill ph-image text-base"></i> แนบรูป
                                             <input type="file" id="file-upload-${log.id}" accept="image/*" class="hidden" onchange="window.handleImageSelect(event, '${log.id}')">
                                         </label>
                                         
-                                        <!-- AI Lab Analysis Button -->
-                                        <label class="cursor-pointer text-purple-600 hover:text-purple-700 transition flex items-center gap-1.5 text-[11px] font-bold bg-purple-50 px-2.5 py-1.5 rounded-md border border-purple-200 hover:bg-white shadow-sm" title="ให้ AI ช่วยอ่านผลเลือด/ผลแล็บ">
-                                            <i class="ph-fill ph-magic-wand text-base"></i> วิเคราะห์ผลแล็บ (AI)
-                                            <input type="file" id="lab-upload-${log.id}" accept="image/*" class="hidden" onchange="window.handleLabAnalysis(event, '${log.id}')">
-                                        </label>
+                                        <!-- AI Context Input & Button -->
+                                        <div class="flex items-center gap-1.5 w-full sm:w-auto flex-1">
+                                            <input type="text" id="ai-context-${log.id}" placeholder="ระบุอาการให้ AI วิเคราะห์ประกอบ (เช่น ซึม, อ้วก)..." class="w-full sm:min-w-[220px] text-[11px] font-semibold px-2.5 py-1.5 border border-purple-200 bg-purple-50/50 rounded-md outline-none focus:border-purple-400 focus:bg-white text-purple-900 placeholder:text-purple-300 shadow-sm transition">
+                                            <label class="shrink-0 cursor-pointer text-purple-600 hover:text-purple-700 transition flex items-center gap-1.5 text-[11px] font-bold bg-purple-50 px-2.5 py-1.5 rounded-md border border-purple-200 hover:bg-white shadow-sm" title="ให้ AI ช่วยอ่านผลเลือด/ผลแล็บ">
+                                                <i class="ph-fill ph-magic-wand text-base"></i> วิเคราะห์ผล
+                                                <input type="file" id="lab-upload-${log.id}" accept="image/*" class="hidden" onchange="window.handleLabAnalysis(event, '${log.id}')">
+                                            </label>
+                                        </div>
                                     </div>
 
-                                    <button id="submit-update-btn-${log.id}" onclick="window.submitInlineUpdate('${log.id}')" class="text-xs font-bold bg-gray-800 text-white hover:bg-gray-900 px-4 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                                    <button id="submit-update-btn-${log.id}" onclick="window.submitInlineUpdate('${log.id}')" class="shrink-0 text-xs font-bold bg-gray-800 text-white hover:bg-gray-900 px-4 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm w-full lg:w-auto justify-center mt-2 lg:mt-0">
                                         <i class="ph-bold ph-paper-plane-right text-white"></i> ส่งอัปเดต
                                     </button>
                                 </div>
@@ -591,6 +594,8 @@
             if(fileInput) fileInput.value = '';
             const labInput = document.getElementById(`lab-upload-${id}`);
             if(labInput) labInput.value = '';
+            const aiContextInput = document.getElementById(`ai-context-${id}`);
+            if(aiContextInput) aiContextInput.value = '';
         };
 
         window.handleLabAnalysis = async function(event, id) {
@@ -606,10 +611,14 @@
             // 1. โหลดรูปมาแสดงพรีวิวก่อน
             window.handleImageSelect(event, id);
 
-            // 2. ล็อกช่องผลแล็บ และใส่ข้อความโหลด (แยกส่งเข้าช่องแล็บแทนช่องอัปเดตอาการ)
+            // 2. ดึงข้อมูลบริบทอาการ (Clinical Context) ที่หมอพิมพ์ไว้
+            const aiContextInput = document.getElementById(`ai-context-${id}`);
+            const aiContextText = aiContextInput ? aiContextInput.value.trim() : "";
+
+            // 3. ล็อกช่องผลแล็บ และใส่ข้อความโหลด
             const labBox = document.getElementById(`new-lab-${id}`);
             const originalText = labBox.value;
-            labBox.value = "✨ AI กำลังวิเคราะห์ผลแล็บจากรูปภาพ... กรุณารอสักครู่...";
+            labBox.value = "✨ AI กำลังวิเคราะห์ผลแล็บจากรูปภาพและอาการ... กรุณารอสักครู่...";
             labBox.disabled = true;
             labBox.style.height = 'auto';
             labBox.style.height = labBox.scrollHeight + 'px';
@@ -626,8 +635,22 @@
                 // เรียกใช้งาน Gemini AI
                 const genAI = new GoogleGenerativeAI(apiKey);
                 
-                // Prompt สั่งงาน AI
-                const prompt = "คุณคือผู้ช่วยสัตวแพทย์ผู้เชี่ยวชาญ นี่คือภาพใบรายงานผลการตรวจเลือดหรือผลแล็บของสัตว์เลี้ยง โปรดทำตามคำสั่งต่อไปนี้อย่างเคร่งครัด:\n1. ดึงค่าพารามิเตอร์ที่สำคัญออกมา\n2. เปรียบเทียบกับค่าปกติ (Normal Range) ที่มีในใบแล็บ\n3. สรุปเฉพาะ 'ค่าที่ผิดปกติ' (สูงหรือต่ำกว่าเกณฑ์) พร้อมแปลผลสั้นๆ เป็นภาษาไทยให้สัตวแพทย์เข้าใจง่าย\n4. จัดรูปแบบให้อ่านง่าย เป็น bullet point\nหากในรูปไม่ใช่ผลแล็บ ให้แจ้งว่า 'ไม่พบข้อมูลผลแล็บในรูปภาพ'";
+                // Prompt สั่งงาน AI ระดับผู้เชี่ยวชาญ พร้อมบังคับฟอร์แมต
+                let contextString = aiContextText ? `\n\nอาการเบื้องต้นของสัตว์ป่วย (Clinical Context): ${aiContextText}` : "";
+                
+                const prompt = `คุณคือผู้ช่วยสัตวแพทย์ผู้เชี่ยวชาญ นี่คือภาพใบรายงานผลการตรวจเลือด/ผลแล็บของสัตว์เลี้ยง${contextString}
+โปรดวิเคราะห์รูปภาพและข้อมูลอาการ(ถ้ามี) แล้วตอบกลับมาในรูปแบบที่กำหนดไว้อย่างเคร่งครัดดังนี้:
+
+**Diagnosis:**
+(สรุปความผิดปกติหลักเป็น Medical Term เป็น Bullet points เช่น - Mild Anemia, - Severe Leukocytosis)
+
+**Note:**
+(อธิบายกลไก สาเหตุ หรือ Differential Diagnosis ที่เป็นไปได้แบบสั้นๆ ให้สัตวแพทย์อ่าน โดยเชื่อมโยงกับอาการเบื้องต้นถ้ามี)
+
+**CE (Client Education):**
+(สร้างประโยคสำหรับพูดคุยอธิบายกับเจ้าของสัตว์ ด้วยภาษาที่เข้าใจง่าย เป็นมิตร ไม่ใช้ศัพท์แพทย์ซับซ้อน พร้อมคำแนะนำเบื้องต้น)
+
+หากในรูปไม่ใช่ผลแล็บ ให้ตอบเพียงแค่ 'ไม่พบข้อมูลผลแล็บในรูปภาพ'`;
 
                 // ส่งข้อมูลรูปภาพ
                 const imagePart = {
@@ -673,7 +696,7 @@
                 const aiText = result.response.text();
                 
                 // แทรกข้อความกลับไปที่กล่องผลแล็บ
-                labBox.value = (originalText ? originalText + "\n\n" : "") + "🔬 [สรุปผลแล็บโดย AI]\n" + aiText;
+                labBox.value = (originalText ? originalText + "\n\n" : "") + aiText;
                 labBox.disabled = false;
                 
             } catch (error) {
@@ -797,8 +820,10 @@
                 treatmentArea.style.height = 'auto';
                 labArea.value = '';
                 labArea.style.height = 'auto';
-                window.removePreview(id);
+                const aiContextInput = document.getElementById(`ai-context-${id}`);
+                if (aiContextInput) aiContextInput.value = '';
                 
+                window.removePreview(id);
                 window.renderLogs();
             } catch (error) {
                 console.error("Error updating document: ", error);
