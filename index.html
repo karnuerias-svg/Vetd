@@ -538,7 +538,7 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // 1. โหลดรูปมาแสดงพรีวิวก่อน (เตรียมพร้อมจะอัปโหลดขึ้น Firebase ตอนกดบันทึก)
+            // 1. โหลดรูปมาแสดงพรีวิวก่อน
             window.handleImageSelect(event, id);
 
             // 2. ล็อกช่องอัปเดต และใส่ข้อความโหลด
@@ -550,43 +550,53 @@
             updateBox.style.height = updateBox.scrollHeight + 'px';
 
             try {
-                // อ่านไฟล์เป็น Base64 เพื่อส่งให้ Gemini
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    const base64Data = reader.result.split(',')[1];
-                    
-                    // เรียกใช้งาน Gemini AI (ใช้ตัว Flash เพื่อความรวดเร็วในการดูภาพ)
-                    const genAI = new GoogleGenerativeAI(apiKey);
-                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                // อ่านไฟล์เป็น Base64 แบบ Promise เพื่อให้ดักจับ Error ได้ถูกต้อง 100%
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+                
+                // เรียกใช้งาน Gemini AI
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-                    // Prompt สั่งงาน AI
-                    const prompt = "คุณคือผู้ช่วยสัตวแพทย์ผู้เชี่ยวชาญ นี่คือภาพใบรายงานผลการตรวจเลือดหรือผลแล็บของสัตว์เลี้ยง โปรดทำตามคำสั่งต่อไปนี้อย่างเคร่งครัด:\n1. ดึงค่าพารามิเตอร์ที่สำคัญออกมา\n2. เปรียบเทียบกับค่าปกติ (Normal Range) ที่มีในใบแล็บ\n3. สรุปเฉพาะ 'ค่าที่ผิดปกติ' (สูงหรือต่ำกว่าเกณฑ์) พร้อมแปลผลสั้นๆ เป็นภาษาไทยให้สัตวแพทย์เข้าใจง่าย\n4. จัดรูปแบบให้อ่านง่าย เป็น bullet point\nหากในรูปไม่ใช่ผลแล็บ ให้แจ้งว่า 'ไม่พบข้อมูลผลแล็บในรูปภาพ'";
+                // Prompt สั่งงาน AI
+                const prompt = "คุณคือผู้ช่วยสัตวแพทย์ผู้เชี่ยวชาญ นี่คือภาพใบรายงานผลการตรวจเลือดหรือผลแล็บของสัตว์เลี้ยง โปรดทำตามคำสั่งต่อไปนี้อย่างเคร่งครัด:\n1. ดึงค่าพารามิเตอร์ที่สำคัญออกมา\n2. เปรียบเทียบกับค่าปกติ (Normal Range) ที่มีในใบแล็บ\n3. สรุปเฉพาะ 'ค่าที่ผิดปกติ' (สูงหรือต่ำกว่าเกณฑ์) พร้อมแปลผลสั้นๆ เป็นภาษาไทยให้สัตวแพทย์เข้าใจง่าย\n4. จัดรูปแบบให้อ่านง่าย เป็น bullet point\nหากในรูปไม่ใช่ผลแล็บ ให้แจ้งว่า 'ไม่พบข้อมูลผลแล็บในรูปภาพ'";
 
-                    // ส่งข้อมูลรูปภาพ
-                    const imagePart = {
-                        inlineData: {
-                            data: base64Data,
-                            mimeType: file.type
-                        }
-                    };
-
-                    const result = await model.generateContent([prompt, imagePart]);
-                    const aiText = result.response.text();
-                    
-                    // แทรกข้อความกลับไปที่กล่อง
-                    updateBox.value = (originalText ? originalText + "\n\n" : "") + "🔬 [สรุปผลแล็บโดย AI]\n" + aiText;
-                    updateBox.disabled = false;
-                    
-                    // ขยายกล่องอัตโนมัติ
-                    updateBox.style.height = 'auto';
-                    updateBox.style.height = updateBox.scrollHeight + 'px';
+                // ส่งข้อมูลรูปภาพ
+                const imagePart = {
+                    inlineData: {
+                        data: base64Data,
+                        mimeType: file.type
+                    }
                 };
+
+                const result = await model.generateContent([prompt, imagePart]);
+                const aiText = result.response.text();
+                
+                // แทรกข้อความกลับไปที่กล่อง
+                updateBox.value = (originalText ? originalText + "\n\n" : "") + "🔬 [สรุปผลแล็บโดย AI]\n" + aiText;
+                updateBox.disabled = false;
+                
             } catch (error) {
                 console.error("AI Error:", error);
                 updateBox.value = originalText; // คืนค่าเดิม
-                updateBox.disabled = false;
-                alert("เกิดข้อผิดพลาดในการวิเคราะห์ AI กรุณาตรวจสอบ API Key หรือลองอีกครั้ง");
+                updateBox.disabled = false; // ปลดล็อกกล่อง
+                
+                // แจ้งเตือนสาเหตุที่แท้จริง
+                let errorMsg = "เกิดข้อผิดพลาดในการวิเคราะห์ AI:\n";
+                if (error.message.includes("API key not valid")) {
+                    errorMsg += "API Key ไม่ถูกต้อง กรุณาตรวจสอบที่การตั้งค่าอีกครั้งครับ";
+                } else {
+                    errorMsg += error.message;
+                }
+                alert(errorMsg);
+            } finally {
+                // ขยายกล่องอัตโนมัติ
+                updateBox.style.height = 'auto';
+                updateBox.style.height = updateBox.scrollHeight + 'px';
             }
         };
 
