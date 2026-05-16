@@ -4,175 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pet Health Log Book</title>
-    <!-- Google Fonts: Sarabun & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter & Noto Sans Thai -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
-        body { 
-            font-family: 'Sarabun', 'Inter', sans-serif; 
+        body { font-family: 'Inter', 'Noto Sans Thai', sans-serif; }
+        /* ซ่อน Scrollbar ของ Textarea แต่ยังเลื่อนได้ */
+        textarea {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        /* ซ่อนปุ่มลูกศรใน input number */
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        textarea::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen bg-slate-50 flex flex-col font-['Sarabun']">
+<body class="bg-slate-100 text-slate-800 min-h-screen">
 
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-200 px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="bg-teal-500 text-white p-2 rounded-lg shadow-sm">
-                <i class="ph ph-paw-print text-2xl"></i>
+    <!-- Navbar -->
+    <nav class="bg-teal-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="ph ph-paw-print text-3xl"></i>
+                <h1 class="text-xl font-bold tracking-wide">Pet Health LogBook</h1>
             </div>
-            <div>
-                <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-tight">Pet Health Log Book</h1>
-                <p class="text-[10px] md:text-xs text-slate-500">ระบบบันทึกและติดตามอาการสัตว์เลี้ยง</p>
+            <div class="text-teal-100 text-sm hidden sm:block">
+                ระบบติดตามอาการสัตว์ป่วย
             </div>
         </div>
-    </header>
+    </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 relative">
+    <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        <!-- LEFT PANEL: Form (Responsive: Stack on mobile, Sticky on desktop) -->
-        <div class="w-full lg:w-1/3 xl:w-1/4 bg-white border border-slate-200 rounded-xl shadow-sm p-5 md:p-6 h-fit lg:sticky top-24 z-10 shrink-0">
-            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800 border-b border-slate-100 pb-3">
-                <i class="ph ph-plus-circle text-teal-500 text-xl"></i> บันทึกเคสใหม่
-            </h2>
+        <!-- Left Column: Form (Sticky on Desktop) -->
+        <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+            
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                    <i class="ph ph-plus-circle text-teal-600 text-xl"></i>
+                    <h2 class="text-lg font-bold text-slate-700">บันทึกเคสใหม่</h2>
+                </div>
 
-            <form id="logForm" class="space-y-4">
-                <!-- Type: OPD / IPD -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">ประเภทการรักษา</label>
-                    <div class="flex gap-4">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="caseType" value="OPD" checked class="w-4 h-4 text-teal-600 focus:ring-teal-500 border-slate-300">
-                            <span class="text-sm font-medium">OPD (กลับบ้าน)</span>
+                <form id="logForm" class="space-y-4">
+                    <!-- Case Type Selection -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="caseType" value="OPD" class="peer sr-only" checked>
+                            <div class="text-center px-4 py-2 rounded-xl border border-slate-200 text-slate-500 font-medium peer-checked:bg-teal-50 peer-checked:border-teal-500 peer-checked:text-teal-700 transition-all hover:bg-slate-50">
+                                ผู้ป่วยนอก (OPD)
+                            </div>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="caseType" value="IPD" class="w-4 h-4 text-rose-500 focus:ring-rose-500 border-slate-300">
-                            <span class="text-sm font-medium">IPD (แอดมิท)</span>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="caseType" value="IPD" class="peer sr-only">
+                            <div class="text-center px-4 py-2 rounded-xl border border-slate-200 text-slate-500 font-medium peer-checked:bg-rose-50 peer-checked:border-rose-500 peer-checked:text-rose-700 transition-all hover:bg-slate-50">
+                                แอดมิท (IPD)
+                            </div>
                         </label>
                     </div>
-                </div>
 
-                <!-- Pet ID -->
-                <div>
-                    <label for="petId" class="block text-sm font-medium text-slate-700 mb-1">รหัสสัตว์เลี้ยง (ID)</label>
-                    <input type="text" id="petId" required placeholder="เช่น HN-001"
-                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
-                </div>
-
-                <!-- Pet Name & Phone (Grid) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                    <div>
-                        <label for="petName" class="block text-sm font-medium text-slate-700 mb-1">ชื่อสัตว์เลี้ยง</label>
-                        <input type="text" id="petName" required placeholder="เช่น น้องมอมแมม"
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">รหัสสัตว์ป่วย (ID)</label>
+                            <input type="text" id="petId" required placeholder="เช่น HN1234" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">วันที่รับเข้า</label>
+                            <input type="date" id="date" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition outline-none text-sm">
+                        </div>
                     </div>
+
                     <div>
-                        <label for="ownerPhone" class="block text-sm font-medium text-slate-700 mb-1">เบอร์โทรเจ้าของ</label>
-                        <input type="tel" id="ownerPhone" placeholder="08X-XXX-XXXX"
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">ชื่อสัตว์เลี้ยง</label>
+                        <input type="text" id="petName" required placeholder="ชื่อน้องหมา/น้องแมว" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition outline-none text-sm">
                     </div>
-                </div>
 
-                <!-- Date -->
-                <div>
-                    <label for="logDate" class="block text-sm font-medium text-slate-700 mb-1">วันที่เข้ารับการรักษา</label>
-                    <input type="date" id="logDate" required
-                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none bg-slate-50 focus:bg-white text-sm cursor-pointer">
-                </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">เบอร์โทรติดต่อ (เจ้าของ)</label>
+                        <input type="tel" id="ownerPhone" placeholder="08X-XXX-XXXX" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition outline-none text-sm">
+                    </div>
 
-                <!-- Symptoms -->
-                <div>
-                    <label for="symptoms" class="block text-sm font-medium text-slate-700 mb-1">อาการสำคัญ (แรกรับ)</label>
-                    <textarea id="symptoms" required rows="3" placeholder="ระบุอาการเบื้องต้นที่พบ..."
-                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none resize-none bg-slate-50 focus:bg-white text-sm"></textarea>
-                </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">อาการสำคัญ (Chief Complaint)</label>
+                        <textarea id="symptoms" required rows="3" placeholder="ระบุอาการตอนรับเข้า..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition outline-none text-sm resize-none"></textarea>
+                    </div>
 
-                <!-- Submit Button -->
-                <button type="submit"
-                    class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 mt-2 shadow-sm hover:shadow active:scale-[0.98]">
-                    <i class="ph ph-floppy-disk text-lg"></i> บันทึกข้อมูลแรกรับ
-                </button>
-            </form>
+                    <button type="submit" id="submitBtn" class="w-full bg-teal-600 text-white font-semibold py-2.5 rounded-xl hover:bg-teal-700 active:bg-teal-800 transition-colors shadow-sm flex justify-center items-center gap-2">
+                        <i class="ph ph-floppy-disk text-lg"></i>
+                        <span>บันทึกข้อมูลเข้าระบบ</span>
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <!-- RIGHT PANEL: Log History -->
-        <div class="w-full lg:w-2/3 xl:w-3/4 flex flex-col gap-4">
+        <!-- Right Column: Logs List -->
+        <div class="lg:col-span-8 flex flex-col gap-4">
             
-            <!-- Search Bar & Filter -->
+            <!-- Filters -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 items-center">
+                <!-- Search Input -->
                 <div class="flex-1 w-full relative">
                     <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                    <input type="text" id="searchInput" placeholder="ค้นหาจาก ชื่อสัตว์, ID หรือ เบอร์โทร..."
+                    <input type="text" id="searchInput" placeholder="ค้นหาชื่อสัตว์, ID หรือ เบอร์โทร..."
                         class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none text-sm">
                 </div>
-                <div class="w-full sm:w-56 relative shrink-0">
+                <!-- OPD/IPD Filter -->
+                <div class="w-full sm:w-40 relative shrink-0">
+                    <label class="absolute -top-2.5 left-3 bg-white px-1 text-[10px] font-semibold text-teal-600 rounded-full border border-teal-100">ประเภทเคส</label>
+                    <select id="typeFilter" class="w-full px-4 py-2.5 bg-teal-50 border border-teal-200 text-teal-800 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none text-sm cursor-pointer font-medium appearance-none">
+                        <option value="ALL">ทั้งหมด (OPD/IPD)</option>
+                        <option value="OPD">เฉพาะ OPD</option>
+                        <option value="IPD">เฉพาะ IPD</option>
+                    </select>
+                    <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none"></i>
+                </div>
+                <!-- Month Filter -->
+                <div class="w-full sm:w-48 relative shrink-0">
                     <label for="monthFilter" class="absolute -top-2.5 left-3 bg-white px-1 text-[10px] font-semibold text-teal-600 rounded-full border border-teal-100">เลือกเดือน</label>
-                    <input type="month" id="monthFilter"
-                        class="w-full px-4 py-2.5 bg-teal-50 border border-teal-200 text-teal-800 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none text-sm cursor-pointer font-medium">
+                    <input type="month" id="monthFilter" class="w-full px-4 py-2.5 bg-teal-50 border border-teal-200 text-teal-800 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors outline-none text-sm cursor-pointer font-medium">
                 </div>
             </div>
 
             <!-- Loading State -->
-            <div id="loadingState" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-slate-400">
-                <i class="ph ph-spinner-gap text-4xl mb-4 animate-spin text-teal-500"></i>
-                <p class="text-sm font-medium text-slate-500">กำลังโหลดข้อมูล...</p>
+            <div id="loadingState" class="hidden py-12 flex flex-col items-center justify-center text-slate-400">
+                <i class="ph ph-spinner-gap text-4xl animate-spin mb-3 text-teal-500"></i>
+                <p>กำลังโหลดข้อมูล...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-slate-400">
+                <i class="ph ph-folder-open text-5xl mb-3 text-slate-300"></i>
+                <p class="text-lg font-medium text-slate-500">ยังไม่มีประวัติการรักษา</p>
+                <p class="text-sm">เพิ่มข้อมูลใหม่ทางด้านซ้ายเพื่อเริ่มต้นใช้งาน หรือเปลี่ยนเดือนที่ค้นหา</p>
             </div>
 
             <!-- Logs Container -->
-            <div id="logsContainer" class="grid grid-cols-1 xl:grid-cols-2 gap-4 auto-rows-max">
-                <!-- Cards will be dynamically inserted here -->
+            <div id="logsContainer" class="space-y-4">
+                <!-- Cards will be injected here via JS -->
             </div>
             
-            <!-- Empty State -->
-            <div id="emptyState" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-12 flex-col items-center justify-center text-slate-400">
-                <i class="ph ph-files text-5xl mb-3 opacity-40"></i>
-                <p class="text-base font-medium text-center text-slate-500">ไม่พบประวัติการรักษา</p>
-                <p class="text-xs mt-1 text-slate-400">ในเดือนที่เลือก หรือตรงกับคำค้นหา</p>
-            </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Custom Delete Confirmation Modal -->
-    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center backdrop-blur-sm px-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-                    <i class="ph ph-warning-circle text-2xl text-red-600"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-slate-800">ยืนยันการลบ</h3>
-                    <p class="text-sm text-slate-500 mt-1">คุณต้องการลบประวัตินี้ใช่หรือไม่? ข้อมูลที่ลบจะไม่สามารถกู้คืนได้</p>
-                </div>
+    <!-- Custom Confirm Delete Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl transform scale-95 transition-transform duration-200" id="deleteModalContent">
+            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+                <i class="ph ph-warning text-2xl text-red-600"></i>
             </div>
-            <div class="flex gap-3 mt-6">
-                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors text-sm">
-                    ยกเลิก
-                </button>
-                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors text-sm">
-                    ใช่, ลบข้อมูล
-                </button>
+            <h3 class="text-lg font-bold text-center text-slate-800 mb-2">ยืนยันการลบข้อมูล</h3>
+            <p class="text-sm text-center text-slate-500 mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบประวัตินี้? ข้อมูลที่ลบจะไม่สามารถกู้คืนได้</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition">ยกเลิก</button>
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition">ลบข้อมูล</button>
             </div>
         </div>
     </div>
 
+    <!-- JavaScript Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
-        // Your Firebase config
+        // Your web app's Firebase configuration (User provided)
         const firebaseConfig = {
             apiKey: "AIzaSyBv8laQ8UVv9wbDr8uDiD7w4huDDIhZymA",
             authDomain: "vetd-4a601.firebaseapp.com",
@@ -186,267 +189,245 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app); 
         
-        // Collection Reference
         const logsRef = collection(db, 'clinics', 'my-clinic', 'petLogs');
 
-        // State Variables
         let petLogs = [];
-        let unsubscribeRealtime = null; // เก็บตัวยกเลิกการดึงข้อมูลของเดือนเก่า
+        let unsubscribeRealtime = null;
 
-        // DOM Elements
+        // Form elements
         const form = document.getElementById('logForm');
         const logsContainer = document.getElementById('logsContainer');
         const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
         const monthFilter = document.getElementById('monthFilter');
         const emptyState = document.getElementById('emptyState');
         const loadingState = document.getElementById('loadingState');
 
-        // Authentication แบบไม่ระบุตัวตน (ให้ใช้งานได้ทันที)
+        // Delete Modal state
+        let logIdToDelete = null;
+
+        // Default Date (Today)
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Default Month Filter (Current Month)
+        const today = new Date();
+        const currentMonthString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+        monthFilter.value = currentMonthString;
+
+        // Sign In
         signInAnonymously(auth).then(() => {
-            console.log("Signed in anonymously");
-            // เมื่อเข้าสู่ระบบสำเร็จ ให้เริ่มโหลดข้อมูลของเดือนปัจจุบัน
+            console.log("Logged in anonymously.");
             loadLogsForSelectedMonth();
         }).catch((error) => {
             console.error("Auth Error:", error);
-            alert("ไม่สามารถเชื่อมต่อระบบบัญชีได้: " + error.message);
+            alert("ไม่สามารถเชื่อมต่อระบบยืนยันตัวตนได้ กรุณาตรวจสอบการตั้งค่า Firebase Authentication");
         });
 
-        // ตั้งค่าเริ่มต้นของวันที่ในฟอร์ม
-        document.getElementById('logDate').valueAsDate = new Date();
-
-        // ตั้งค่าตัวกรองเดือนให้แสดงผลเป็นเดือนปัจจุบัน
-        const currentDate = new Date();
-        const currentMonthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-        monthFilter.value = currentMonthStr;
-
-        // ==========================================
-        // 1. ฟังก์ชันดึงข้อมูลตามเดือน (ประหยัด Quota)
-        // ==========================================
         function loadLogsForSelectedMonth() {
-            const selectedMonth = monthFilter.value; // ex: "2026-05"
-            if (!selectedMonth) return;
-
-            // แสดง Loading
             loadingState.classList.remove('hidden');
-            loadingState.classList.add('flex');
-            logsContainer.innerHTML = '';
             emptyState.classList.add('hidden');
+            logsContainer.innerHTML = '';
 
-            // คำนวณวันแรกและวันสุดท้ายของเดือน
-            const startDay = `${selectedMonth}-01`;
-            const endDay = `${selectedMonth}-31`; // เทียบ string ได้เลยใน Firestore
-
-            // สร้าง Query ดึงเฉพาะวันที่อยู่ในช่วงเดือนที่เลือก
-            const q = query(
-                logsRef, 
-                where("date", ">=", startDay), 
-                where("date", "<=", endDay)
-            );
-
-            // ถ้ายกเลิกการฟังข้อมูลเดือนเก่าก่อนหน้า
             if (unsubscribeRealtime) {
-                unsubscribeRealtime();
+                unsubscribeRealtime(); 
             }
 
-            // ฟังการเปลี่ยนแปลงข้อมูลแบบ Real-time ตาม Query ที่สร้าง
-            unsubscribeRealtime = onSnapshot(q, (snapshot) => {
-                loadingState.classList.remove('flex');
-                loadingState.classList.add('hidden');
+            const selectedMonth = monthFilter.value; // format: "YYYY-MM"
+            if (!selectedMonth) return;
 
-                petLogs = snapshot.docs.map(doc => doc.data());
-                // เรียงลำดับจากใหม่สุดไปเก่าสุด โดยใช้ ID (Timestamp)
-                petLogs.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+            const [year, month] = selectedMonth.split('-');
+            // Create start and end date strings for the query
+            const startDate = `${year}-${month}-01`;
+            const lastDay = new Date(year, month, 0).getDate(); // Get last day of month
+            const endDate = `${year}-${month}-${lastDay}`;
+
+            // แก้ไข: เอา orderBy ออกเพื่อป้องกันปัญหา Index Error
+            const q = query(
+                logsRef, 
+                where("date", ">=", startDate),
+                where("date", "<=", endDate)
+            );
+
+            unsubscribeRealtime = onSnapshot(q, (snapshot) => {
+                petLogs = [];
+                snapshot.forEach((doc) => {
+                    petLogs.push({ id: doc.id, ...doc.data() });
+                });
+
+                // แก้ไข: นำข้อมูลมาจัดเรียง (Sort) บนเครื่องของเราแทน
+                petLogs.sort((a, b) => {
+                    // 1. เรียงตามวันที่รับเข้า (ใหม่ล่าสุดขึ้นก่อน)
+                    if (a.date !== b.date) {
+                        return new Date(b.date) - new Date(a.date);
+                    }
+                    // 2. ถ้าวันที่รับเข้าตรงกัน ให้เรียงตามเวลาที่สร้างเคส (ใหม่ล่าสุดขึ้นก่อน)
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+
+                loadingState.classList.add('hidden');
                 window.renderLogs();
             }, (error) => {
-                console.error("Snapshot error:", error);
-                loadingState.classList.remove('flex');
+                console.error("Error fetching data:", error);
                 loadingState.classList.add('hidden');
+                alert("ไม่สามารถดึงข้อมูลได้: กรุณาตรวจสอบให้แน่ใจว่าเปิดใช้งาน Firebase Firestore ใน Test Mode แล้ว");
             });
         }
 
-        // ==========================================
-        // 2. จัดการการเพิ่มข้อมูล (Submit Form)
-        // ==========================================
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // ดึงค่า OPD/IPD
-            const caseType = document.querySelector('input[name="caseType"]:checked').value;
-
-            const newLog = {
-                id: Date.now().toString(),
-                caseType: caseType,
-                petId: document.getElementById('petId').value,
-                petName: document.getElementById('petName').value,
-                ownerPhone: document.getElementById('ownerPhone').value,
-                date: document.getElementById('logDate').value,
-                symptoms: document.getElementById('symptoms').value,
-                updates: [], // เริ่มต้นไม่มีอัปเดต
-                isDischarged: false, // สำหรับ IPD
-                dischargedAt: null // วันที่ส่งกลับ
-            };
-
-            try {
-                // บันทึกขึ้น Firestore
-                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', newLog.id);
-                await setDoc(docRef, newLog);
-                
-                // เคลียร์ฟอร์ม (เก็บวันที่ไว้เหมือนเดิมเผื่อคีย์ต่อ)
-                const formDate = document.getElementById('logDate').value;
-                const formType = caseType;
-                form.reset();
-                document.getElementById('logDate').value = formDate;
-                document.querySelector(`input[name="caseType"][value="${formType}"]`).checked = true;
-                
-                // เลื่อนหน้าจอกลับมาบนสุด (สำหรับมือถือ)
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (error) {
-                console.error("Error adding document: ", error);
-            }
-        });
-
-        // เปลี่ยนเดือน -> โหลดข้อมูลใหม่จากฐานข้อมูล
         monthFilter.addEventListener('change', () => loadLogsForSelectedMonth());
-        
-        // พิมพ์ค้นหา -> กรองจากข้อมูลที่มีอยู่ในเครื่อง (ไม่เสีย Quota เพิ่ม)
+        typeFilter.addEventListener('change', () => window.renderLogs());
         searchInput.addEventListener('input', () => window.renderLogs());
 
-        // ==========================================
-        // 3. ฟังก์ชันการแสดงผล
-        // ==========================================
         window.renderLogs = function() {
             const filterText = searchInput.value.toLowerCase();
+            const filterType = typeFilter.value;
 
-            // กรองข้อความค้นหา (จากข้อมูลในเดือนนี้ที่โหลดมาแล้ว)
             const filteredLogs = petLogs.filter(log => {
                 const matchName = log.petName.toLowerCase().includes(filterText);
                 const matchId = log.petId.toLowerCase().includes(filterText);
                 const matchPhone = log.ownerPhone ? log.ownerPhone.includes(filterText) : false;
-                return matchName || matchId || matchPhone;
+                const matchType = filterType === 'ALL' || log.caseType === filterType;
+                
+                return (matchName || matchId || matchPhone) && matchType;
             });
 
             if (filteredLogs.length === 0) {
                 emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
                 logsContainer.innerHTML = '';
                 return;
-            } else {
-                emptyState.classList.remove('flex');
-                emptyState.classList.add('hidden');
             }
 
+            emptyState.classList.add('hidden');
             logsContainer.innerHTML = filteredLogs.map(log => {
                 // Formatting Date
                 const dateObj = new Date(log.date);
-                const thaiDate = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                const displayDate = dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
                 
+                // Generating Updates HTML
                 const updatesHtml = (log.updates || []).map((update, index) => `
                     <div class="bg-teal-50 border border-teal-100 p-3 rounded-lg text-sm mb-2 group/update relative">
                         <div class="flex justify-between items-start mb-1">
                             <span class="font-semibold text-teal-800 text-xs flex items-center gap-2">
                                 อัปเดต ${index + 1}
                                 <button onclick="window.toggleEditUpdate('${log.id}', ${index})" class="text-teal-400 hover:text-teal-700 opacity-0 group-hover/update:opacity-100 transition-opacity" title="แก้ไข">
-                                    <i class="ph ph-pencil-simple"></i>
+                                    <i class="ph ph-pencil-simple text-sm"></i>
                                 </button>
                             </span>
                             <span class="text-[10px] text-teal-600 bg-teal-100 px-1.5 py-0.5 rounded">${update.timestamp || ''}</span>
                         </div>
                         
-                        <!-- Show Text -->
+                        <!-- Show Text & Image -->
                         <div id="update-display-${log.id}-${index}">
                             <p class="text-slate-700 whitespace-pre-wrap">${update.text}</p>
+                            ${update.imageUrl ? `<a href="${update.imageUrl}" target="_blank"><img src="${update.imageUrl}" class="mt-2 rounded-lg max-h-40 border border-teal-200 object-cover hover:opacity-90 transition shadow-sm" alt="ภาพอัปเดต"></a>` : ''}
                         </div>
                         
                         <!-- Edit Form (Hidden by default) -->
                         <div id="update-edit-${log.id}-${index}" class="hidden mt-2 flex flex-col gap-2">
                             <textarea id="update-textarea-${log.id}-${index}" rows="1" class="w-full text-sm p-2 border border-teal-300 rounded outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 resize-none overflow-hidden" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'">${update.text}</textarea>
-                            <div class="flex justify-end gap-2">
-                                <button onclick="window.cancelEditUpdate('${log.id}', ${index})" class="text-xs px-2 py-1 text-slate-500 hover:bg-slate-200 rounded transition">ยกเลิก</button>
-                                <button onclick="window.saveEditUpdate('${log.id}', ${index})" class="text-xs px-2 py-1 bg-teal-500 text-white hover:bg-teal-600 rounded transition">บันทึก</button>
+                            
+                            <!-- Edit Image Preview -->
+                            <div id="edit-preview-container-${log.id}-${index}" class="${update.imageUrl ? '' : 'hidden'} relative w-fit mt-1">
+                                <img id="edit-preview-image-${log.id}-${index}" class="h-16 rounded border border-slate-200 object-cover" src="${update.imageUrl || ''}" alt="preview">
+                                <button type="button" onclick="window.removeEditPreview('${log.id}', ${index})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 shadow flex items-center justify-center"><i class="ph ph-x text-[10px]"></i></button>
+                            </div>
+
+                            <div class="flex justify-between items-center mt-1">
+                                <label class="cursor-pointer text-slate-400 hover:text-teal-600 transition flex items-center gap-1 text-xs">
+                                    <i class="ph ph-image text-lg"></i> เปลี่ยน/แนบรูป
+                                    <input type="file" id="edit-file-upload-${log.id}-${index}" accept="image/*" class="hidden" onchange="window.handleEditImageSelect(event, '${log.id}', ${index})">
+                                </label>
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="window.cancelEditUpdate('${log.id}', ${index})" class="text-xs px-2 py-1 text-slate-500 hover:bg-slate-200 rounded transition">ยกเลิก</button>
+                                    <button id="save-edit-btn-${log.id}-${index}" onclick="window.saveEditUpdate('${log.id}', ${index})" class="text-xs px-3 py-1 bg-teal-500 text-white hover:bg-teal-600 rounded transition">บันทึก</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `).join('');
 
                 // Check Case Type Badge
-                let typeBadge = '';
+                let badgeHtml = '';
                 let dischargeSection = '';
 
                 if (log.caseType === 'IPD') {
                     if (log.isDischarged) {
-                        typeBadge = `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">IPD (กลับบ้านแล้ว)</span>`;
+                        badgeHtml = `<span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded border border-slate-200 shadow-sm flex items-center gap-1"><i class="ph ph-house-line"></i> IPD (กลับบ้านแล้ว)</span>`;
                         dischargeSection = `
-                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                                <div class="flex items-center gap-2 text-sm text-slate-500">
-                                    <i class="ph-fill ph-check-circle text-green-500 text-lg"></i>
-                                    <span>ส่งกลับเมื่อ: <span class="font-medium">${log.dischargedAt}</span></span>
-                                </div>
-                                <button onclick="window.toggleDischarge('${log.id}', false)" class="text-xs text-slate-400 hover:text-rose-500 underline">ยกเลิกการส่งตัว</button>
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                                <span class="text-slate-500 flex items-center gap-1"><i class="ph ph-check-circle text-teal-500 text-lg"></i> ส่งตัวกลับบ้านเมื่อ: ${log.dischargeDate}</span>
+                                <button onclick="window.toggleDischarge('${log.id}', false)" class="text-rose-500 hover:underline">ยกเลิก</button>
                             </div>
                         `;
                     } else {
-                        typeBadge = `<span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-xs font-bold border border-rose-200">IPD (แอดมิท)</span>`;
+                        badgeHtml = `<span class="px-2 py-1 bg-rose-100 text-rose-700 text-xs font-semibold rounded border border-rose-200 shadow-sm">IPD</span>`;
                         dischargeSection = `
-                            <div class="mt-4 pt-3 border-t border-slate-100">
-                                <label class="flex items-center gap-2 cursor-pointer bg-slate-50 p-2 rounded border border-slate-200 hover:bg-slate-100 transition">
-                                    <input type="checkbox" onchange="window.toggleDischarge('${log.id}', true)" class="w-4 h-4 text-green-600 rounded border-slate-300">
-                                    <span class="text-sm font-medium text-slate-700">ติ๊กเมื่อส่งตัวกลับบ้านเรียบร้อย</span>
-                                </label>
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
+                                <input type="checkbox" id="discharge-${log.id}" onchange="window.toggleDischarge('${log.id}', this.checked)" class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer">
+                                <label for="discharge-${log.id}" class="text-sm font-medium text-slate-600 cursor-pointer select-none">จำหน่ายเคส (ส่งตัวกลับบ้าน)</label>
                             </div>
                         `;
                     }
                 } else {
-                    typeBadge = `<span class="px-2 py-0.5 bg-teal-100 text-teal-700 rounded text-xs font-bold border border-teal-200">OPD</span>`;
+                    badgeHtml = `<span class="px-2 py-1 bg-teal-100 text-teal-700 text-xs font-semibold rounded border border-teal-200 shadow-sm">OPD</span>`;
                 }
 
-                // Phone Display
-                const phoneHtml = log.ownerPhone 
-                    ? `<div class="flex items-center gap-1 text-xs text-slate-500 mt-1"><i class="ph ph-phone"></i> ${log.ownerPhone}</div>` 
-                    : '';
-
+                // Building the Card
                 return `
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-5 hover:shadow-md transition-shadow relative group flex flex-col h-full h-auto">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow relative group">
                         
-                        <!-- Delete Button (Hidden by default, show on hover) -->
-                        <button onclick="window.openDeleteModal('${log.id}')" 
-                            class="absolute top-4 right-4 text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100">
+                        <!-- Delete Button (Hover) -->
+                        <button onclick="window.openDeleteModal('${log.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-white rounded-full p-1 shadow-sm border border-transparent hover:border-red-200" title="ลบข้อมูล">
                             <i class="ph ph-trash text-lg"></i>
                         </button>
 
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2 pr-8">
+                        <div class="flex items-center gap-2 mb-2 pr-8">
+                            <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">ID: ${log.petId}</span>
+                            ${badgeHtml}
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
                             <div>
-                                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2 flex-wrap">
-                                    ${log.petName} 
-                                    <span class="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                                        <i class="ph ph-identification-card"></i> ${log.petId}
-                                    </span>
-                                    ${typeBadge}
-                                </h3>
-                                ${phoneHtml}
+                                <h3 class="text-xl font-bold text-teal-800">${log.petName}</h3>
+                                ${log.ownerPhone ? `<p class="text-sm text-slate-500 mt-0.5 flex items-center gap-1"><i class="ph ph-phone text-slate-400"></i> ${log.ownerPhone}</p>` : ''}
                             </div>
-                            <span class="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full shrink-0">
-                                <i class="ph ph-calendar-blank"></i> ${thaiDate}
+                            <span class="text-sm text-slate-500 flex items-center gap-1 font-medium bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 shrink-0">
+                                <i class="ph ph-calendar-blank"></i> ${displayDate}
                             </span>
                         </div>
                         
-                        <!-- Symptoms (แดงอ่อน) -->
-                        <div class="bg-rose-50 border border-rose-100 rounded-lg p-3 mb-3">
-                            <h4 class="text-xs font-bold text-rose-800 mb-1">อาการสำคัญ (แรกรับ)</h4>
-                            <p class="text-sm text-slate-700 whitespace-pre-wrap">${log.symptoms}</p>
+                        <div class="bg-rose-50/50 border border-rose-100 rounded-lg p-3 mb-4">
+                            <p class="text-xs font-semibold text-rose-800 mb-1 flex items-center gap-1">
+                                <i class="ph ph-stethoscope"></i> อาการสำคัญ (Chief Complaint)
+                            </p>
+                            <p class="text-slate-700 text-sm whitespace-pre-wrap">${log.symptoms}</p>
                         </div>
 
-                        <div class="flex-1 flex flex-col justify-start">
-                            <h4 class="text-xs font-bold text-teal-800 mb-2">ประวัติการอัปเดต</h4>
+                        <div>
+                            <p class="text-xs font-semibold text-teal-800 mb-2 flex items-center gap-1">
+                                <i class="ph ph-activity"></i> ประวัติและอัปเดตอาการ
+                            </p>
                             
                             ${updatesHtml}
                             ${(log.updates && log.updates.length === 0) ? '<p class="text-xs text-slate-400 italic mb-2">ยังไม่มีการอัปเดตอาการ...</p>' : ''}
                             
-                            <!-- กล่องพิมพ์อัปเดตใหม่ตรงๆ (Inline Input) -->
+                            <!-- Inline Add Update Input -->
                             <div class="mt-2 border border-slate-200 rounded-lg p-2 bg-slate-50 focus-within:bg-white focus-within:border-teal-400 focus-within:ring-1 focus-within:ring-teal-400 transition-all">
                                 <textarea id="new-update-${log.id}" rows="1" placeholder="พิมพ์อัปเดตอาการที่นี่..." class="w-full text-sm bg-transparent outline-none resize-none overflow-hidden" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
-                                <div class="flex justify-end mt-1">
-                                    <button onclick="window.submitInlineUpdate('${log.id}')" class="text-xs font-medium bg-teal-100 text-teal-700 hover:bg-teal-600 hover:text-white px-2.5 py-1.5 rounded transition flex items-center gap-1">
+                                
+                                <!-- Image Preview for New Update -->
+                                <div id="preview-container-${log.id}" class="hidden mt-2 relative w-fit">
+                                    <img id="preview-image-${log.id}" class="h-16 rounded border border-slate-200 object-cover" src="" alt="preview">
+                                    <button type="button" onclick="window.removePreview('${log.id}')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 shadow flex items-center justify-center"><i class="ph ph-x text-[10px]"></i></button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-2 border-t border-slate-100 pt-2">
+                                    <label class="cursor-pointer text-slate-400 hover:text-teal-600 transition flex items-center gap-1 text-xs">
+                                        <i class="ph ph-image text-lg"></i> แนบรูปภาพ
+                                        <input type="file" id="file-upload-${log.id}" accept="image/*" class="hidden" onchange="window.handleImageSelect(event, '${log.id}')">
+                                    </label>
+                                    <button id="submit-update-btn-${log.id}" onclick="window.submitInlineUpdate('${log.id}')" class="text-xs font-medium bg-teal-100 text-teal-700 hover:bg-teal-600 hover:text-white px-3 py-1.5 rounded transition flex items-center gap-1 shadow-sm">
                                         <i class="ph ph-paper-plane-right"></i> ส่งอัปเดต
                                     </button>
                                 </div>
@@ -459,117 +440,262 @@
             }).join('');
         };
 
-        // ==========================================
-        // 4. ฟังก์ชันจัดการข้อมูล (Update / Discharge / Delete)
-        // ==========================================
-        
-        // ส่งอัปเดตใหม่แบบ Inline
-        window.submitInlineUpdate = async function(id) {
-            const textarea = document.getElementById(`new-update-${id}`);
-            const updateText = textarea.value.trim();
-            if (!updateText) return;
+        // State for images
+        window.pendingImages = {};
+        window.pendingEditImages = {};
+        window.removedEditImages = {};
 
-            // สร้าง Timestamp ปัจจุบัน
-            const now = new Date();
-            const timeString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
-                               now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
-
-            const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
-            const targetLog = petLogs.find(l => l.id === id);
-            const currentUpdates = targetLog.updates || [];
-            
-            try {
-                textarea.value = ''; // เคลียร์กล่องหลังกดส่ง
-                textarea.style.height = 'auto'; // คืนขนาดกล่องกลับเป็นค่าเริ่มต้น
-                await updateDoc(docRef, {
-                    updates: [...currentUpdates, { text: updateText, timestamp: timeString }]
-                });
-            } catch (error) {
-                console.error("Error updating document: ", error);
+        window.handleImageSelect = function(event, id) {
+            const file = event.target.files[0];
+            if (file) {
+                window.pendingImages[id] = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById(`preview-image-${id}`).src = e.target.result;
+                    document.getElementById(`preview-container-${id}`).classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
             }
         };
 
-        // เปิดโหมดแก้ไขอัปเดต
+        window.removePreview = function(id) {
+            delete window.pendingImages[id];
+            document.getElementById(`preview-container-${id}`).classList.add('hidden');
+            document.getElementById(`file-upload-${id}`).value = '';
+        };
+
+        window.handleEditImageSelect = function(event, id, index) {
+            const file = event.target.files[0];
+            if (file) {
+                window.pendingEditImages[`${id}-${index}`] = file;
+                window.removedEditImages[`${id}-${index}`] = false;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById(`edit-preview-image-${id}-${index}`).src = e.target.result;
+                    document.getElementById(`edit-preview-container-${id}-${index}`).classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.removeEditPreview = function(id, index) {
+            delete window.pendingEditImages[`${id}-${index}`];
+            window.removedEditImages[`${id}-${index}`] = true;
+            document.getElementById(`edit-preview-container-${id}-${index}`).classList.add('hidden');
+            document.getElementById(`edit-file-upload-${id}-${index}`).value = '';
+        };
+
+        // Form Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-lg"></i> <span>กำลังบันทึก...</span>';
+            btn.disabled = true;
+
+            const caseType = document.querySelector('input[name="caseType"]:checked').value;
+            
+            const newLog = {
+                petId: document.getElementById('petId').value,
+                petName: document.getElementById('petName').value,
+                ownerPhone: document.getElementById('ownerPhone').value,
+                date: document.getElementById('date').value,
+                symptoms: document.getElementById('symptoms').value,
+                caseType: caseType,
+                updates: [],
+                isDischarged: false,
+                dischargeDate: null,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                // สร้าง ID ใหม่ให้ Document
+                const newDocRef = doc(logsRef); 
+                await setDoc(newDocRef, newLog);
+                
+                form.reset();
+                // คืนค่าวันที่เป็นวันนี้
+                document.getElementById('date').valueAsDate = new Date();
+                // เลือก OPD คืน
+                document.querySelector('input[name="caseType"][value="OPD"]').checked = true;
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Submit Inline Update
+        window.submitInlineUpdate = async function(id) {
+            const textarea = document.getElementById(`new-update-${id}`);
+            const updateText = textarea.value.trim();
+            const file = window.pendingImages[id];
+            
+            if (!updateText && !file) return;
+
+            const btn = document.getElementById(`submit-update-btn-${id}`);
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner-gap animate-spin"></i> ส่ง...';
+            btn.disabled = true;
+
+            try {
+                let imageUrl = null;
+                // Upload Image
+                if (file) {
+                    const storageRef = ref(storage, `updates/${id}/${Date.now()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    imageUrl = await getDownloadURL(storageRef);
+                }
+
+                const now = new Date();
+                const timeString = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
+                                   now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+
+                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
+                const targetLog = petLogs.find(l => l.id === id);
+                const currentUpdates = targetLog.updates || [];
+                
+                await updateDoc(docRef, {
+                    updates: [...currentUpdates, { text: updateText, timestamp: timeString, imageUrl: imageUrl }]
+                });
+
+                textarea.value = ''; 
+                textarea.style.height = 'auto'; 
+                window.removePreview(id);
+            } catch (error) {
+                console.error("Error updating document: ", error);
+                alert("กรุณาตรวจสอบว่าเปิดใช้งาน Firebase Storage (Test Mode) แล้วหรือไม่");
+            } finally {
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+            }
+        };
+
+        // Open Edit Mode
         window.toggleEditUpdate = function(id, index) {
             document.getElementById(`update-display-${id}-${index}`).classList.add('hidden');
             document.getElementById(`update-edit-${id}-${index}`).classList.remove('hidden');
             
-            // ขยายขนาดกล่องให้พอดีกับข้อความเดิมทันทีที่เปิดโหมดแก้ไข
             const textarea = document.getElementById(`update-textarea-${id}-${index}`);
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
         };
 
-        // ยกเลิกแก้ไขอัปเดต
+        // Cancel Edit Mode
         window.cancelEditUpdate = function(id, index) {
-            document.getElementById(`update-display-${id}-${index}`).classList.remove('hidden');
-            document.getElementById(`update-edit-${id}-${index}`).classList.add('hidden');
+            delete window.pendingEditImages[`${id}-${index}`];
+            delete window.removedEditImages[`${id}-${index}`];
+            window.renderLogs(); 
         };
 
-        // บันทึกการแก้ไขอัปเดต
+        // Save Edit
         window.saveEditUpdate = async function(id, index) {
             const textarea = document.getElementById(`update-textarea-${id}-${index}`);
             const newText = textarea.value.trim();
-            if (!newText) return;
+            const file = window.pendingEditImages[`${id}-${index}`];
+            const isImageRemoved = window.removedEditImages[`${id}-${index}`];
+            
+            if (!newText && !file && isImageRemoved) return;
+
+            const btn = document.getElementById(`save-edit-btn-${id}-${index}`);
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner-gap animate-spin"></i> บันทึก...';
+            btn.disabled = true;
 
             const targetLog = petLogs.find(l => l.id === id);
             const currentUpdates = [...targetLog.updates];
-            
-            currentUpdates[index].text = newText;
-            
-            const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
+            let imageUrl = currentUpdates[index].imageUrl || null;
+
+            if (isImageRemoved) imageUrl = null;
+
             try {
+                if (file) {
+                    const storageRef = ref(storage, `updates/${id}/${Date.now()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    imageUrl = await getDownloadURL(storageRef);
+                }
+
+                currentUpdates[index].text = newText;
+                currentUpdates[index].imageUrl = imageUrl;
+                
+                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
                 await updateDoc(docRef, { updates: currentUpdates });
+
+                delete window.pendingEditImages[`${id}-${index}`];
+                delete window.removedEditImages[`${id}-${index}`];
             } catch (error) {
                 console.error("Error editing update: ", error);
+                alert("เกิดข้อผิดพลาดในการบันทึกรูป");
+            } finally {
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
             }
         };
 
-        // ติ๊กส่งตัวกลับบ้าน / ยกเลิก
-        window.toggleDischarge = async function(id, isDischarged) {
-            const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
-            
-            let dischargedAtTime = null;
-            if (isDischarged) {
-                const now = new Date();
-                dischargedAtTime = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
-                                   now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
-            }
-
+        // Discharge Case
+        window.toggleDischarge = async function(id, isChecked) {
             try {
-                await updateDoc(docRef, {
-                    isDischarged: isDischarged,
-                    dischargedAt: dischargedAtTime
-                });
+                const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
+                let updateData = { isDischarged: isChecked };
+                
+                if (isChecked) {
+                    const now = new Date();
+                    updateData.dischargeDate = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + 
+                                               now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+                } else {
+                    updateData.dischargeDate = null;
+                }
+
+                await updateDoc(docRef, updateData);
             } catch (error) {
-                console.error("Error updating discharge state: ", error);
+                console.error("Error updating discharge status: ", error);
             }
         };
 
-        // ==========================================
-        // 5. ระบบ Modal สำหรับลบข้อมูล (Custom Confirm)
-        // ==========================================
-        let deleteTargetId = null;
-        const deleteModal = document.getElementById('deleteModal');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-
+        // Custom Delete Modal Logic
+        const modal = document.getElementById('deleteModal');
+        const modalContent = document.getElementById('deleteModalContent');
+        
         window.openDeleteModal = function(id) {
-            deleteTargetId = id;
-            deleteModal.classList.remove('hidden');
+            logIdToDelete = id;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Animate pop
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
         };
 
         window.closeDeleteModal = function() {
-            deleteTargetId = null;
-            deleteModal.classList.add('hidden');
+            logIdToDelete = null;
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 200);
         };
 
-        confirmDeleteBtn.addEventListener('click', async () => {
-            if (deleteTargetId) {
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (logIdToDelete) {
+                const btn = document.getElementById('confirmDeleteBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="ph ph-spinner-gap animate-spin"></i> ลบ...';
+                btn.disabled = true;
+
                 try {
-                    await deleteDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', deleteTargetId));
+                    await deleteDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', logIdToDelete));
                     window.closeDeleteModal();
                 } catch (error) {
                     console.error("Error deleting document: ", error);
+                    alert("ลบข้อมูลไม่สำเร็จ");
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 }
             }
         });
