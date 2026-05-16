@@ -181,6 +181,16 @@
         </div>
     </div>
 
+    <!-- Image Expand Modal (Lightbox) -->
+    <div id="imageModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity" onclick="window.closeImageModal()">
+        <div class="relative w-full h-full flex items-center justify-center p-4">
+            <button type="button" onclick="window.closeImageModal()" class="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 backdrop-blur-md transition shadow-sm border border-white/20">
+                <i class="ph ph-x text-xl font-bold"></i>
+            </button>
+            <img id="imageModalContent" src="" class="max-w-full max-h-full rounded-2xl shadow-2xl object-contain transform scale-95 transition-transform duration-200 cursor-zoom-out" onclick="event.stopPropagation(); window.closeImageModal();" alt="Expanded Image">
+        </div>
+    </div>
+
     <!-- Custom Confirm Delete Modal -->
     <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/40 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl p-7 w-full max-w-sm mx-4 shadow-2xl transform scale-95 transition-transform duration-200" id="deleteModalContent">
@@ -362,7 +372,7 @@
                             </div>
                             ` : ''}
 
-                            ${update.imageUrl ? `<a href="${update.imageUrl}" target="_blank"><img src="${update.imageUrl}" class="mt-2 rounded-xl max-h-48 border border-gray-200 object-cover hover:opacity-90 transition" alt="ภาพอัปเดต"></a>` : ''}
+                            ${update.imageUrl ? `<img src="${update.imageUrl}" onclick="window.openImageModal('${update.imageUrl}')" class="mt-2 rounded-xl max-h-48 border border-gray-200 object-cover hover:opacity-90 transition cursor-zoom-in" alt="ภาพอัปเดต">` : ''}
                         </div>
                         
                         <!-- Edit Section -->
@@ -375,7 +385,7 @@
                             </div>
 
                             <div id="edit-preview-container-${log.id}-${index}" class="${update.imageUrl ? '' : 'hidden'} relative w-fit mt-1 px-1">
-                                <img id="edit-preview-image-${log.id}-${index}" class="h-20 rounded-lg border border-gray-300 object-cover" src="${update.imageUrl || ''}" alt="preview">
+                                <img id="edit-preview-image-${log.id}-${index}" class="h-20 rounded-lg border border-gray-300 object-cover cursor-zoom-in" onclick="window.openImageModal('${update.imageUrl || ''}')" src="${update.imageUrl || ''}" alt="preview">
                                 <button type="button" onclick="window.removeEditPreview('${log.id}', ${index})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 shadow-sm"><i class="ph ph-x text-[12px] font-bold text-white"></i></button>
                             </div>
 
@@ -468,7 +478,7 @@
                                 </div>
 
                                 <div id="preview-container-${log.id}" class="hidden mt-2 relative w-fit px-1">
-                                    <img id="preview-image-${log.id}" class="h-20 rounded-lg border border-gray-200 object-cover" src="" alt="preview">
+                                    <img id="preview-image-${log.id}" class="h-20 rounded-lg border border-gray-200 object-cover cursor-zoom-in" src="" alt="preview" onclick="window.openImageModal(this.src)">
                                     <button type="button" onclick="window.removePreview('${log.id}')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 shadow-sm"><i class="ph ph-x text-[10px] font-bold text-white"></i></button>
                                 </div>
 
@@ -970,6 +980,30 @@
                 localStorage.removeItem('gemini_api_key');
             }
             window.closeSettings();
+        };
+
+        // --- ระบบ Image Lightbox (ขยายรูปภาพ) ---
+        const imageModal = document.getElementById('imageModal');
+        const imageModalContent = document.getElementById('imageModalContent');
+
+        window.openImageModal = function(url) {
+            imageModalContent.src = url;
+            imageModal.classList.remove('hidden');
+            imageModal.classList.add('flex');
+            setTimeout(() => {
+                imageModalContent.classList.remove('scale-95');
+                imageModalContent.classList.add('scale-100');
+            }, 10);
+        };
+
+        window.closeImageModal = function() {
+            imageModalContent.classList.remove('scale-100');
+            imageModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                imageModal.classList.remove('flex');
+                imageModal.classList.add('hidden');
+                setTimeout(() => { imageModalContent.src = ''; }, 100); // เคลียร์รูปหลังจาก transition จบ
+            }, 200);
         };
 
     </script>
