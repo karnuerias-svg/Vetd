@@ -371,6 +371,14 @@
                                 <p class="text-blue-900 whitespace-pre-wrap leading-relaxed text-sm font-semibold">${update.treatment}</p>
                             </div>
                             ` : ''}
+                            
+                            <!-- Lab Results Box -->
+                            ${update.labResult ? `
+                            <div class="bg-purple-50 border border-purple-100 rounded-lg p-2.5 mb-2">
+                                <p class="text-purple-800 text-[11px] font-bold mb-1 flex items-center gap-1.5"><i class="ph-fill ph-flask text-purple-500"></i> ผลตรวจแล็บ (Lab Results)</p>
+                                <p class="text-purple-900 whitespace-pre-wrap leading-relaxed text-sm font-semibold">${update.labResult}</p>
+                            </div>
+                            ` : ''}
 
                             ${update.imageUrl ? `<img src="${update.imageUrl}" onclick="window.openImageModal('${update.imageUrl}')" class="mt-2 rounded-xl max-h-48 border border-gray-200 object-cover hover:opacity-90 transition cursor-zoom-in" alt="ภาพอัปเดต">` : ''}
                         </div>
@@ -382,6 +390,11 @@
                             <div class="relative">
                                 <div class="absolute top-3 left-3 text-blue-400"><i class="ph-fill ph-pill text-lg"></i></div>
                                 <textarea id="update-treatment-${log.id}-${index}" rows="1" placeholder="การรักษา / ยาที่จ่าย (ถ้ามี)..." class="w-full text-sm font-semibold p-3 pl-10 border border-blue-200 bg-blue-50 rounded-lg outline-none resize-none overflow-hidden text-blue-900 focus:border-blue-400 transition" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'">${update.treatment || ''}</textarea>
+                            </div>
+                            
+                            <div class="relative">
+                                <div class="absolute top-3 left-3 text-purple-400"><i class="ph-fill ph-flask text-lg"></i></div>
+                                <textarea id="update-lab-${log.id}-${index}" rows="1" placeholder="ผลตรวจแล็บ (ถ้ามี)..." class="w-full text-sm font-semibold p-3 pl-10 border border-purple-200 bg-purple-50 rounded-lg outline-none resize-none overflow-hidden text-purple-900 focus:border-purple-400 transition" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'">${update.labResult || ''}</textarea>
                             </div>
 
                             <div id="edit-preview-container-${log.id}-${index}" class="${update.imageUrl ? '' : 'hidden'} relative w-fit mt-1 px-1">
@@ -475,6 +488,11 @@
                                 <div class="relative mb-2">
                                     <div class="absolute top-2 left-2 text-blue-400"><i class="ph-fill ph-pill text-lg"></i></div>
                                     <textarea id="new-treatment-${log.id}" rows="1" placeholder="การรักษา / ยาที่จ่าย (ถ้ามี)..." class="w-full text-sm font-semibold text-blue-900 bg-blue-50 border border-blue-100 rounded-lg py-2.5 pr-2 pl-9 outline-none resize-none overflow-hidden placeholder:text-blue-400 transition focus:border-blue-300" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                </div>
+                                
+                                <div class="relative mb-2">
+                                    <div class="absolute top-2 left-2 text-purple-400"><i class="ph-fill ph-flask text-lg"></i></div>
+                                    <textarea id="new-lab-${log.id}" rows="1" placeholder="ผลตรวจแล็บ (ถ้ามี)..." class="w-full text-sm font-semibold text-purple-900 bg-purple-50 border border-purple-100 rounded-lg py-2.5 pr-2 pl-9 outline-none resize-none overflow-hidden placeholder:text-purple-400 transition focus:border-purple-300" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
                                 </div>
 
                                 <div id="preview-container-${log.id}" class="hidden mt-2 relative w-fit px-1">
@@ -588,13 +606,13 @@
             // 1. โหลดรูปมาแสดงพรีวิวก่อน
             window.handleImageSelect(event, id);
 
-            // 2. ล็อกช่องอัปเดต และใส่ข้อความโหลด
-            const updateBox = document.getElementById(`new-update-${id}`);
-            const originalText = updateBox.value;
-            updateBox.value = "✨ AI กำลังวิเคราะห์ผลแล็บจากรูปภาพ... กรุณารอสักครู่...";
-            updateBox.disabled = true;
-            updateBox.style.height = 'auto';
-            updateBox.style.height = updateBox.scrollHeight + 'px';
+            // 2. ล็อกช่องผลแล็บ และใส่ข้อความโหลด (แยกส่งเข้าช่องแล็บแทนช่องอัปเดตอาการ)
+            const labBox = document.getElementById(`new-lab-${id}`);
+            const originalText = labBox.value;
+            labBox.value = "✨ AI กำลังวิเคราะห์ผลแล็บจากรูปภาพ... กรุณารอสักครู่...";
+            labBox.disabled = true;
+            labBox.style.height = 'auto';
+            labBox.style.height = labBox.scrollHeight + 'px';
 
             try {
                 // อ่านไฟล์เป็น Base64 แบบ Promise
@@ -654,14 +672,14 @@
 
                 const aiText = result.response.text();
                 
-                // แทรกข้อความกลับไปที่กล่อง
-                updateBox.value = (originalText ? originalText + "\n\n" : "") + "🔬 [สรุปผลแล็บโดย AI]\n" + aiText;
-                updateBox.disabled = false;
+                // แทรกข้อความกลับไปที่กล่องผลแล็บ
+                labBox.value = (originalText ? originalText + "\n\n" : "") + "🔬 [สรุปผลแล็บโดย AI]\n" + aiText;
+                labBox.disabled = false;
                 
             } catch (error) {
                 console.error("AI Error:", error);
-                updateBox.value = originalText; // คืนค่าเดิม
-                updateBox.disabled = false; // ปลดล็อกกล่อง
+                labBox.value = originalText; // คืนค่าเดิม
+                labBox.disabled = false; // ปลดล็อกกล่อง
                 
                 // แจ้งเตือนสาเหตุที่แท้จริงแบบเข้าใจง่าย
                 let errorMsg = "เกิดข้อผิดพลาดในการวิเคราะห์ AI:\n";
@@ -675,8 +693,8 @@
                 alert(errorMsg);
             } finally {
                 // ขยายกล่องอัตโนมัติ
-                updateBox.style.height = 'auto';
-                updateBox.style.height = updateBox.scrollHeight + 'px';
+                labBox.style.height = 'auto';
+                labBox.style.height = labBox.scrollHeight + 'px';
             }
         };
 
@@ -707,10 +725,18 @@
                 const newDocRef = doc(logsRef); 
                 await setDoc(newDocRef, newLog);
                 
+                // อัปเดตข้อมูลบนหน้าจอทันที (Optimistic UI)
+                petLogs.unshift({ id: newDocRef.id, ...newLog });
+                petLogs.sort((a, b) => {
+                    if (a.date !== b.date) return new Date(b.date) - new Date(a.date);
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+                
                 form.reset();
                 document.getElementById('date').valueAsDate = new Date();
                 document.querySelector('input[name="caseType"][value="OPD"]').checked = true;
-                loadLogsForSelectedMonth();
+                window.renderLogs();
+                
             } catch (error) {
                 console.error("Error adding document: ", error);
                 alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
@@ -723,11 +749,13 @@
         window.submitInlineUpdate = async function(id) {
             const textarea = document.getElementById(`new-update-${id}`);
             const treatmentArea = document.getElementById(`new-treatment-${id}`);
+            const labArea = document.getElementById(`new-lab-${id}`);
             const updateText = textarea.value.trim();
             const treatmentText = treatmentArea.value.trim();
+            const labText = labArea.value.trim();
             const file = window.pendingImages[id];
             
-            if (!updateText && !treatmentText && !file) return;
+            if (!updateText && !treatmentText && !labText && !file) return;
 
             const btn = document.getElementById(`submit-update-btn-${id}`);
             const originalBtnHtml = btn.innerHTML;
@@ -737,7 +765,6 @@
             try {
                 let imageUrl = null;
                 if (file) {
-                    // ใช้ฟังก์ชันบีบอัดรูปภาพ แทนการอัปโหลดขึ้น Firebase Storage
                     imageUrl = await window.compressImage(file);
                 }
 
@@ -749,22 +776,30 @@
                 const targetLog = petLogs.find(l => l.id === id);
                 const currentUpdates = targetLog.updates || [];
                 
+                const newUpdateObj = { 
+                    text: updateText, 
+                    treatment: treatmentText, 
+                    labResult: labText,
+                    timestamp: timeString, 
+                    imageUrl: imageUrl 
+                };
+
                 await updateDoc(docRef, {
-                    updates: [...currentUpdates, { 
-                        text: updateText, 
-                        treatment: treatmentText, 
-                        timestamp: timeString, 
-                        imageUrl: imageUrl 
-                    }]
+                    updates: [...currentUpdates, newUpdateObj]
                 });
+
+                // อัปเดตข้อมูลบนหน้าจอทันที ไม่ต้องรีโหลด (Optimistic UI)
+                targetLog.updates.push(newUpdateObj);
 
                 textarea.value = ''; 
                 textarea.style.height = 'auto'; 
                 treatmentArea.value = '';
                 treatmentArea.style.height = 'auto';
+                labArea.value = '';
+                labArea.style.height = 'auto';
                 window.removePreview(id);
                 
-                loadLogsForSelectedMonth();
+                window.renderLogs();
             } catch (error) {
                 console.error("Error updating document: ", error);
                 alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
@@ -806,6 +841,10 @@
             const treatmentArea = document.getElementById(`update-treatment-${id}-${index}`);
             treatmentArea.style.height = 'auto';
             treatmentArea.style.height = treatmentArea.scrollHeight + 'px';
+            
+            const labArea = document.getElementById(`update-lab-${id}-${index}`);
+            labArea.style.height = 'auto';
+            labArea.style.height = labArea.scrollHeight + 'px';
         };
 
         window.cancelEditUpdate = function(id, index) {
@@ -817,12 +856,15 @@
         window.saveEditUpdate = async function(id, index) {
             const textarea = document.getElementById(`update-textarea-${id}-${index}`);
             const treatmentArea = document.getElementById(`update-treatment-${id}-${index}`);
+            const labArea = document.getElementById(`update-lab-${id}-${index}`);
+            
             const newText = textarea.value.trim();
             const newTreatment = treatmentArea.value.trim();
+            const newLab = labArea.value.trim();
             const file = window.pendingEditImages[`${id}-${index}`];
             const isImageRemoved = window.removedEditImages[`${id}-${index}`];
             
-            if (!newText && !newTreatment && !file && isImageRemoved) return;
+            if (!newText && !newTreatment && !newLab && !file && isImageRemoved) return;
 
             const btn = document.getElementById(`save-edit-btn-${id}-${index}`);
             const originalBtnHtml = btn.innerHTML;
@@ -837,21 +879,24 @@
 
             try {
                 if (file) {
-                    // ใช้ฟังก์ชันบีบอัดรูปภาพ แทนการอัปโหลดขึ้น Firebase Storage
                     imageUrl = await window.compressImage(file);
                 }
 
                 currentUpdates[index].text = newText;
                 currentUpdates[index].treatment = newTreatment;
+                currentUpdates[index].labResult = newLab;
                 currentUpdates[index].imageUrl = imageUrl;
                 
                 const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', id);
                 await updateDoc(docRef, { updates: currentUpdates });
 
+                // อัปเดตข้อมูลบนหน้าจอทันที (Optimistic UI)
+                targetLog.updates = currentUpdates;
+
                 delete window.pendingEditImages[`${id}-${index}`];
                 delete window.removedEditImages[`${id}-${index}`];
                 
-                loadLogsForSelectedMonth();
+                window.renderLogs();
             } catch (error) {
                 console.error("Error editing update: ", error);
                 alert("เกิดข้อผิดพลาดในการบันทึกรูป");
@@ -875,7 +920,13 @@
                 }
 
                 await updateDoc(docRef, updateData);
-                loadLogsForSelectedMonth();
+                
+                // อัปเดตข้อมูลบนหน้าจอทันที (Optimistic UI)
+                const targetLog = petLogs.find(l => l.id === id);
+                targetLog.isDischarged = isChecked;
+                targetLog.dischargeDate = updateData.dischargeDate;
+                window.renderLogs();
+                
             } catch (error) {
                 console.error("Error updating discharge status: ", error);
             }
@@ -934,12 +985,17 @@
                             currentUpdates.splice(updateIndexToDelete, 1);
                             const docRef = doc(db, 'clinics', 'my-clinic', 'petLogs', logIdToDelete);
                             await updateDoc(docRef, { updates: currentUpdates });
+                            
+                            // อัปเดตข้อมูลบนหน้าจอทันที (Optimistic UI)
+                            targetLog.updates = currentUpdates;
                         }
                     } else {
                         await deleteDoc(doc(db, 'clinics', 'my-clinic', 'petLogs', logIdToDelete));
+                        // อัปเดตข้อมูลบนหน้าจอทันที (Optimistic UI)
+                        petLogs = petLogs.filter(l => l.id !== logIdToDelete);
                     }
                     window.closeDeleteModal();
-                    loadLogsForSelectedMonth();
+                    window.renderLogs(); // เรนเดอร์ใหม่โดยไม่ต้องโหลด
                 } catch (error) {
                     console.error("Error deleting document: ", error);
                     alert("ลบข้อมูลไม่สำเร็จ");
