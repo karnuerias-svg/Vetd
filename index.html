@@ -560,8 +560,7 @@
                 
                 // เรียกใช้งาน Gemini AI
                 const genAI = new GoogleGenerativeAI(apiKey);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+                
                 // Prompt สั่งงาน AI
                 const prompt = "คุณคือผู้ช่วยสัตวแพทย์ผู้เชี่ยวชาญ นี่คือภาพใบรายงานผลการตรวจเลือดหรือผลแล็บของสัตว์เลี้ยง โปรดทำตามคำสั่งต่อไปนี้อย่างเคร่งครัด:\n1. ดึงค่าพารามิเตอร์ที่สำคัญออกมา\n2. เปรียบเทียบกับค่าปกติ (Normal Range) ที่มีในใบแล็บ\n3. สรุปเฉพาะ 'ค่าที่ผิดปกติ' (สูงหรือต่ำกว่าเกณฑ์) พร้อมแปลผลสั้นๆ เป็นภาษาไทยให้สัตวแพทย์เข้าใจง่าย\n4. จัดรูปแบบให้อ่านง่าย เป็น bullet point\nหากในรูปไม่ใช่ผลแล็บ ให้แจ้งว่า 'ไม่พบข้อมูลผลแล็บในรูปภาพ'";
 
@@ -573,7 +572,23 @@
                     }
                 };
 
-                const result = await model.generateContent([prompt, imagePart]);
+                let result;
+                try {
+                    // ลองใช้โมเดล gemini-1.5-flash-latest ก่อน
+                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+                    result = await model.generateContent([prompt, imagePart]);
+                } catch (fallbackErr) {
+                    if (fallbackErr.message && fallbackErr.message.includes("404")) {
+                        console.warn("Flash model not found, falling back to gemini-1.5-pro-latest");
+                        // หากหา Flash ไม่เจอ (404) ให้สลับไปใช้ 1.5 Pro อัตโนมัติ
+                        const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+                        result = await fallbackModel.generateContent([prompt, imagePart]);
+                    } else {
+                        // โยน error แบบอื่นออกไปให้ catch ด้านนอกจัดการ
+                        throw fallbackErr; 
+                    }
+                }
+
                 const aiText = result.response.text();
                 
                 // แทรกข้อความกลับไปที่กล่อง
